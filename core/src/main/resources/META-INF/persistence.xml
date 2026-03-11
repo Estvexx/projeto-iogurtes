@@ -9,11 +9,22 @@
 
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!--
-            À medida que criares as entidades JPA vais adicionando aqui
-            Exemplo:
-            <class>com.iogurtes.model.Iogurte</class>
-        -->
+        <class>com.iogurtes.model.Empresa</class>
+        <class>com.iogurtes.model.User</class>
+        <class>com.iogurtes.model.UserRole</class>
+        <class>com.iogurtes.model.Fornecedor</class>
+        <class>com.iogurtes.model.FornecedorCertificacao</class>
+        <class>com.iogurtes.model.MateriaPrima</class>
+        <class>com.iogurtes.model.ProdutoFinal</class>
+        <class>com.iogurtes.model.ProdutoMateria</class>
+        <class>com.iogurtes.model.MovimentoStockMP</class>
+        <class>com.iogurtes.model.MovimentoStockPF</class>
+        <class>com.iogurtes.model.OrdemProducao</class>
+        <class>com.iogurtes.model.ConsumoProducao</class>
+        <class>com.iogurtes.model.PalletTipo</class>
+        <class>com.iogurtes.model.Encomenda</class>
+        <class>com.iogurtes.model.EncomendaPallet</class>
+        <class>com.iogurtes.model.EncomendaOrdem</class>
 
         <properties>
             <!-- Ligação à BD -->

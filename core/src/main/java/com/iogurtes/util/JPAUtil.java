@@ -11,17 +11,15 @@ public class JPAUtil {
 
     private JPAUtil() {}
 
-    /**
-     * Devolve um novo EntityManager.
-     * Lembra-te sempre de fechar com em.close()
-     */
+
+    //  Devolve um novo EntityManager.
+
     public static EntityManager getEntityManager() {
         return emf.createEntityManager();
     }
 
-    /**
-     * Fechar quando a aplicação terminar.
-     */
+     // Fechar quando a aplicação terminar.
+
     public static void close() {
         if (emf != null && emf.isOpen()) {
             emf.close();
