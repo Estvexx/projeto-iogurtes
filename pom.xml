@@ -34,7 +34,6 @@
 
   <dependencyManagement>
     <dependencies>
-
       <!-- PostgreSQL -->
       <dependency>
         <groupId>org.postgresql</groupId>
