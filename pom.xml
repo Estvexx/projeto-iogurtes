@@ -3,19 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.iogurtes</groupId>
   <artifactId>projeto-iogurtes</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>  <!-- pom = projeto pai, não gera jar -->
+  <packaging>pom</packaging>
 
   <name>Projeto Iogurtes - Root</name>
 
   <modules>
-    <module>core</module>
-    <module>desktop</module>
-    <module>web</module>
     <module>core</module>
     <module>desktop</module>
     <module>web</module>
@@ -26,14 +24,21 @@
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <spring.version>5.3.30</spring.version>
+    <!-- Framework versions -->
+    <spring.version>6.1.6</spring.version>
+    <spring.data.jpa.version>3.2.5</spring.data.jpa.version>
     <hibernate.version>6.4.4.Final</hibernate.version>
+
+    <!-- Drivers -->
     <postgresql.version>42.7.3</postgresql.version>
+
+    <!-- UI -->
     <javafx.version>21.0.2</javafx.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
+
       <!-- PostgreSQL -->
       <dependency>
         <groupId>org.postgresql</groupId>
@@ -62,18 +67,25 @@
         <version>${spring.version}</version>
       </dependency>
 
+      <!-- Spring Data JPA -->
+      <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <version>${spring.data.jpa.version}</version>
+      </dependency>
+
       <!-- JavaFX -->
       <dependency>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-controls</artifactId>
         <version>${javafx.version}</version>
       </dependency>
+
       <dependency>
         <groupId>org.openjfx</groupId>
         <artifactId>javafx-fxml</artifactId>
         <version>${javafx.version}</version>
       </dependency>
-
 
     </dependencies>
   </dependencyManagement>

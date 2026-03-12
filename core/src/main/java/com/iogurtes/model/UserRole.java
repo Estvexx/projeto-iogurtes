@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_roles",
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "role"}))
-public class UserRole {
 
+public class UserRole {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
