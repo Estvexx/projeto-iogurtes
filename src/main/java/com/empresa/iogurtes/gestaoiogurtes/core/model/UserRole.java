@@ -26,8 +26,7 @@ public class UserRole {
 
     public UserRole() {}
 
-    public UserRole(User user, UserRoleType role) {
-        this.user = user;
+    public UserRole(UserRoleType role) {
         this.role = role;
         this.createdAt = LocalDateTime.now();
     }

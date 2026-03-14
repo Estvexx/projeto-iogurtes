@@ -27,9 +27,6 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "cargo", length = 80)
-    private String cargo;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "turno")
     private TurnoTipo turno;
@@ -49,12 +46,11 @@ public class User {
     public User() {}
 
     public User(Empresa empresa, String nome, String email, String passwordHash,
-                String cargo, TurnoTipo turno, LocalDate dataAdmissao) {
+                 TurnoTipo turno, LocalDate dataAdmissao) {
         this.empresa = empresa;
         this.nome = nome;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.cargo = cargo;
         this.turno = turno;
         this.dataAdmissao = dataAdmissao;
         this.createdAt = LocalDateTime.now();
@@ -65,7 +61,6 @@ public class User {
     public String getNome() { return nome; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
-    public String getCargo() { return cargo; }
     public TurnoTipo getTurno() { return turno; }
     public LocalDate getDataAdmissao() { return dataAdmissao; }
     public LocalDateTime getCreatedAt() { return createdAt; }
@@ -77,7 +72,6 @@ public class User {
     public void setNome(String nome) { this.nome = nome; }
     public void setEmail(String email) { this.email = email; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public void setCargo(String cargo) { this.cargo = cargo; }
     public void setTurno(TurnoTipo turno) { this.turno = turno; }
     public void setDataAdmissao(LocalDate dataAdmissao) { this.dataAdmissao = dataAdmissao; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
@@ -90,7 +84,6 @@ public class User {
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
-                ", cargo='" + cargo + '\'' +
                 ", turno=" + turno +
                 '}';
     }
