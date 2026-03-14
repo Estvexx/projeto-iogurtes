@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
+
 
 @Entity
 @Table(name = "encomenda_pallets",
@@ -11,8 +13,8 @@ import java.util.List;
 public class EncomendaPallet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "encomenda_id", nullable = false)
@@ -54,7 +56,7 @@ public class EncomendaPallet {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public Encomenda getEncomenda() { return encomenda; }
     public ProdutoFinal getProduto() { return produto; }
     public PalletTipo getPalletTipo() { return palletTipo; }
@@ -64,7 +66,7 @@ public class EncomendaPallet {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<EncomendaOrdem> getOrdens() { return ordens; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setEncomenda(Encomenda encomenda) { this.encomenda = encomenda; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setPalletTipo(PalletTipo palletTipo) { this.palletTipo = palletTipo; }

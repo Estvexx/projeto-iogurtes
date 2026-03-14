@@ -1,14 +1,16 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
+import java.util.UUID;
+
 
 @Entity
 @Table(name = "empresas")
 public class Empresa {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "nome_empresa", nullable = false, length = 150)
     private String nomeEmpresa;
@@ -40,7 +42,7 @@ public class Empresa {
         this.cidade = cidade;
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public String getNomeEmpresa() { return nomeEmpresa; }
     public String getNipc() { return nipc; }
     public String getTelefone() { return telefone; }
@@ -48,7 +50,7 @@ public class Empresa {
     public String getCodigoPostal() { return codigoPostal; }
     public String getCidade() { return cidade; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setNomeEmpresa(String nomeEmpresa) { this.nomeEmpresa = nomeEmpresa; }
     public void setNipc(String nipc) { this.nipc = nipc; }
     public void setTelefone(String telefone) { this.telefone = telefone; }

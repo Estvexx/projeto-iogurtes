@@ -3,6 +3,7 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "produto_materias",
@@ -10,8 +11,8 @@ import java.time.LocalDateTime;
 public class ProdutoMateria {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false)
@@ -37,13 +38,13 @@ public class ProdutoMateria {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public ProdutoFinal getProduto() { return produto; }
     public MateriaPrima getMateria() { return materia; }
     public BigDecimal getQuantidadePorUnidadeProduto() { return quantidadePorUnidadeProduto; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setMateria(MateriaPrima materia) { this.materia = materia; }
     public void setQuantidadePorUnidadeProduto(BigDecimal quantidade) { this.quantidadePorUnidadeProduto = quantidade; }

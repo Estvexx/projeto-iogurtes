@@ -6,13 +6,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "empresa_id")
@@ -56,7 +58,7 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public Empresa getEmpresa() { return empresa; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }
@@ -67,7 +69,7 @@ public class User {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<UserRole> getRoles() { return roles; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
     public void setNome(String nome) { this.nome = nome; }
     public void setEmail(String email) { this.email = email; }

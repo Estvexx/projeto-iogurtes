@@ -3,6 +3,8 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoEncomendaOrdem;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 
 @Entity
 @Table(name = "encomenda_ordens",
@@ -10,8 +12,8 @@ import java.time.LocalDateTime;
 public class EncomendaOrdem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "ordem_id", nullable = false)
@@ -45,7 +47,7 @@ public class EncomendaOrdem {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public OrdemProducao getOrdem() { return ordem; }
     public EncomendaPallet getEncomendaPallet() { return encomendaPallet; }
     public Integer getQuantidadePallets() { return quantidadePallets; }
@@ -53,7 +55,7 @@ public class EncomendaOrdem {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setOrdem(OrdemProducao ordem) { this.ordem = ordem; }
     public void setEncomendaPallet(EncomendaPallet encomendaPallet) { this.encomendaPallet = encomendaPallet; }
     public void setQuantidadePallets(Integer quantidadePallets) { this.quantidadePallets = quantidadePallets; }
