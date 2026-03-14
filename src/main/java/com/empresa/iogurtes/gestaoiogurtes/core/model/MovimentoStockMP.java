@@ -4,14 +4,15 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "movimentos_stock_mp")
 public class MovimentoStockMP {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -46,7 +47,7 @@ public class MovimentoStockMP {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public User getUser() { return user; }
     public MateriaPrima getMateria() { return materia; }
     public TipoMovimentoMP getTipo() { return tipo; }
@@ -54,7 +55,7 @@ public class MovimentoStockMP {
     public String getObservacao() { return observacao; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setMateria(MateriaPrima materia) { this.materia = materia; }
     public void setTipo(TipoMovimentoMP tipo) { this.tipo = tipo; }

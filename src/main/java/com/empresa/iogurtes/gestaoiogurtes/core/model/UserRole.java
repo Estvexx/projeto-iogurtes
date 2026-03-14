@@ -3,6 +3,7 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_roles",
@@ -10,8 +11,8 @@ import java.time.LocalDateTime;
 
 public class UserRole {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -26,19 +27,18 @@ public class UserRole {
 
     public UserRole() {}
 
-    public UserRole(User user, UserRoleType role) {
-        this.user = user;
+    public UserRole(UserRoleType role) {
         this.role = role;
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public User getUser() { return user; }
     public UserRoleType getRole() { return role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setRole(UserRoleType role) { this.role = role; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

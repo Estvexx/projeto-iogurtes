@@ -6,13 +6,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import java.util.UUID;
+
 @Entity
 @Table(name = "users")
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "empresa_id")
@@ -26,9 +28,6 @@ public class User {
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-    @Column(name = "cargo", length = 80)
-    private String cargo;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "turno")
@@ -49,35 +48,32 @@ public class User {
     public User() {}
 
     public User(Empresa empresa, String nome, String email, String passwordHash,
-                String cargo, TurnoTipo turno, LocalDate dataAdmissao) {
+                 TurnoTipo turno, LocalDate dataAdmissao) {
         this.empresa = empresa;
         this.nome = nome;
         this.email = email;
         this.passwordHash = passwordHash;
-        this.cargo = cargo;
         this.turno = turno;
         this.dataAdmissao = dataAdmissao;
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public Empresa getEmpresa() { return empresa; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
-    public String getCargo() { return cargo; }
     public TurnoTipo getTurno() { return turno; }
     public LocalDate getDataAdmissao() { return dataAdmissao; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<UserRole> getRoles() { return roles; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
     public void setNome(String nome) { this.nome = nome; }
     public void setEmail(String email) { this.email = email; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-    public void setCargo(String cargo) { this.cargo = cargo; }
     public void setTurno(TurnoTipo turno) { this.turno = turno; }
     public void setDataAdmissao(LocalDate dataAdmissao) { this.dataAdmissao = dataAdmissao; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
@@ -90,7 +86,6 @@ public class User {
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
-                ", cargo='" + cargo + '\'' +
                 ", turno=" + turno +
                 '}';
     }

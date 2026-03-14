@@ -1,7 +1,7 @@
-package com.empresa.iogurtes.gestaoiogurtes.core.model.enums; // classe UserRole pertence a este pacote
+package com.empresa.iogurtes.gestaoiogurtes.core.model.enums;
 
 public enum UserRoleType {
-    admin,
-    funcionario,
-    empresa,
+    ADMIN,
+    FUNCIONARIO,
+    EMPRESA,
 }
