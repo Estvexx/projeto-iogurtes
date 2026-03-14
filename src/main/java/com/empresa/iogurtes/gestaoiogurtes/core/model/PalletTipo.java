@@ -3,14 +3,15 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "pallet_tipos")
 public class PalletTipo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "nome", nullable = false, length = 80)
     private String nome;
@@ -32,13 +33,13 @@ public class PalletTipo {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public String getNome() { return nome; }
     public BigDecimal getCapacidadeKg() { return capacidadeKg; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
     public void setCapacidadeKg(BigDecimal capacidadeKg) { this.capacidadeKg = capacidadeKg; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

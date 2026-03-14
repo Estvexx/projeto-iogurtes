@@ -3,14 +3,15 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "fornecedores")
 public class Fornecedor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;
@@ -36,7 +37,6 @@ public class Fornecedor {
     @OneToMany(mappedBy = "fornecedor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FornecedorCertificacao> certificacoes;
 
-    // ─── Construtores ─────────────────────────────────────────────
     public Fornecedor() {}
 
     public Fornecedor(String nome, String nif, String email,
@@ -49,8 +49,7 @@ public class Fornecedor {
         this.createdAt = LocalDateTime.now();
     }
 
-    // ─── Getters ──────────────────────────────────────────────────
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public String getNome() { return nome; }
     public String getNif() { return nif; }
     public String getEmail() { return email; }
@@ -60,8 +59,7 @@ public class Fornecedor {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<FornecedorCertificacao> getCertificacoes() { return certificacoes; }
 
-    // ─── Setters ──────────────────────────────────────────────────
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
     public void setNif(String nif) { this.nif = nif; }
     public void setEmail(String email) { this.email = email; }
@@ -71,7 +69,6 @@ public class Fornecedor {
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setCertificacoes(List<FornecedorCertificacao> certificacoes) { this.certificacoes = certificacoes; }
 
-    // ─── toString ─────────────────────────────────────────────────
     @Override
     public String toString() {
         return "Fornecedor{" +

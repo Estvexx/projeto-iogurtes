@@ -5,14 +5,15 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "ordens_producao")
 public class OrdemProducao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false)
@@ -62,7 +63,7 @@ public class OrdemProducao {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public ProdutoFinal getProduto() { return produto; }
     public BigDecimal getQuantidadeKg() { return quantidadeKg; }
     public EstadoOrdem getEstado() { return estado; }
@@ -75,7 +76,7 @@ public class OrdemProducao {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<ConsumoProducao> getConsumos() { return consumos; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setQuantidadeKg(BigDecimal quantidadeKg) { this.quantidadeKg = quantidadeKg; }
     public void setEstado(EstadoOrdem estado) { this.estado = estado; }

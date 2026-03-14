@@ -1,20 +1,25 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class UserValidator {
 
     private final UserRepository userRepository;
+    private final EmpresaRepository empresaRepository;
 
-    public UserValidator(UserRepository userRepository) {
+    public UserValidator(UserRepository userRepository, EmpresaRepository empresaRepository) {
         this.userRepository = userRepository;
+        this.empresaRepository = empresaRepository;
     }
 
     public void validateCreateUser(String nome,
@@ -22,7 +27,8 @@ public class UserValidator {
                                    String password,
                                    TurnoTipo turno,
                                    LocalDate dataAdmissao,
-                                   List<UserRole> roles) {
+                                   List<UserRole> roles,
+                                   UUID empresaId) {
 
         validarNome(nome);
         validarPassword(password);
@@ -30,6 +36,14 @@ public class UserValidator {
         validarEmail(email);
         validarDataAdmissao(dataAdmissao);
         validarTurnoPorRole(turno, roles);
+        validarEmpresaPorRole(empresaId, roles);
+    }
+
+    public void validateUpdateUser(String nome, TurnoTipo turno, List<UserRole> roles) {
+
+        validarNome(nome);
+        validarTurnoPorRole(turno, roles);
+
     }
 
     private void validarNome(String nome) {
@@ -81,10 +95,27 @@ public class UserValidator {
     private void validarTurnoPorRole(TurnoTipo turno, List<UserRole> roles) {
 
         boolean precisaTurno = roles.stream()
-                .anyMatch(role -> role.getRole().name().equals("FUNCIONARIO"));
+                .anyMatch(role -> role.getRole() == UserRoleType.FUNCIONARIO);
 
         if (precisaTurno && turno == null) {
             throw new IllegalArgumentException("Funcionarios precisam de turno");
+        }
+    }
+
+    private void validarEmpresaPorRole(UUID empresaId, List<UserRole> roles) {
+        boolean isEmpresa = roles.stream()
+                .anyMatch(role -> role.getRole() == UserRoleType.EMPRESA);
+
+        if (isEmpresa && empresaId == null) {
+            throw new IllegalArgumentException("User do tipo empresa deve ter uma empresa associada!");
+        }
+
+        if (isEmpresa && !empresaRepository.existsById(empresaId)) {
+            throw new IllegalArgumentException("Empresa não encontrada!");
+        }
+
+        if (!isEmpresa && empresaId != null) {
+            throw new IllegalArgumentException("Admin e funcionario não podem ter empresa associada!");
         }
     }
 }

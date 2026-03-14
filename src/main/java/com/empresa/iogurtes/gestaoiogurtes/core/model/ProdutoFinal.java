@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "produtos_finais")
@@ -11,7 +12,7 @@ public class ProdutoFinal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private UUID id;
 
     @Column(name = "codigo_sku", unique = true, nullable = false, length = 50)
     private String codigoSku;
@@ -64,7 +65,7 @@ public class ProdutoFinal {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public String getCodigoSku() { return codigoSku; }
     public String getNome() { return nome; }
     public String getDescricao() { return descricao; }
@@ -78,7 +79,7 @@ public class ProdutoFinal {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<ProdutoMateria> getMaterias() { return materias; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setCodigoSku(String codigoSku) { this.codigoSku = codigoSku; }
     public void setNome(String nome) { this.nome = nome; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
