@@ -16,14 +16,27 @@ jobs:
       - name: 📋 Preparar mensagem
         id: prep
         run: |
-          # Buscar mensagem do commit
-          COMMIT_MSG=$(git log -1 --pretty=format:%s)
+          # Buscar mensagem do commit (versão mais robusta)
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" | head -1)
+          
+          # Se não conseguir buscar com git log, tenta outra forma
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+          fi
           
           # Buscar primeiros 5 ficheiros alterados
-          FILES=$(git diff --name-only HEAD~1 HEAD | head -5 | sed 's/^/• `/;s/$/`\n/')
+          FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | head -5 | sed 's/^/• `/;s/$/`\n/')
+          
+          # Se não conseguir buscar ficheiros, usa mensagem alternativa
+          if [ -z "$FILES" ]; then
+            FILES="• (Não foi possível listar os ficheiros)"
+          fi
           
           # Contar total de ficheiros
-          TOTAL_FILES=$(git diff --name-only HEAD~1 HEAD | wc -l)
+          TOTAL_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | wc -l)
+          if [ "$TOTAL_FILES" -eq 0 ]; then
+            TOTAL_FILES="vários"
+          fi
           
           echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
           echo "files<<EOF" >> $GITHUB_OUTPUT
@@ -32,11 +45,13 @@ jobs:
           echo "total_files=$TOTAL_FILES" >> $GITHUB_OUTPUT
 
       - name: 💬 Enviar para o Discord
-        uses: tsickert/discord-webhook@v5.3.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK }}
-          embed-title: "🍦 **Projeto Iogurtes** - Novo push!"
-          embed-description: |
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_MESSAGE: |
+            🍦 **Projeto Iogurtes - Novo push!**
+            
             **👤 Quem:** `${{ github.actor }}`
             **🌿 Branch:** `${{ github.ref_name }}`
+            
             **💬 Mensagem:** 
