@@ -33,6 +33,12 @@ public class FornecedorCertificacao {
 
     public FornecedorCertificacao() {}
 
+    public FornecedorCertificacao(TipoCertificacao tipo, String descricao, LocalDate validade) {
+        this.tipo = tipo;
+        this.descricao = descricao;
+        this.validade = validade;
+        this.createdAt = LocalDateTime.now();
+    }
     public FornecedorCertificacao(Fornecedor fornecedor, TipoCertificacao tipo,
                                   String descricao, LocalDate validade) {
         this.fornecedor = fornecedor;

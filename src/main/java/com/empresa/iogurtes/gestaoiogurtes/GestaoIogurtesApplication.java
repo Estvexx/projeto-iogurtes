@@ -1,23 +1,17 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.service.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
-import com.empresa.iogurtes.gestaoiogurtes.core.service.UserService;
 import org.springframework.boot.CommandLineRunner;
-
-import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
-import com.empresa.iogurtes.gestaoiogurtes.core.service.EmpresaService;
-
 import org.springframework.context.annotation.Bean;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -28,253 +22,245 @@ public class GestaoIogurtesApplication {
 	}
 
 	@Bean
-	public CommandLineRunner run(UserService userService, EmpresaService empresaService) {
+	public CommandLineRunner run(UserService userService,
+								 EmpresaService empresaService,
+								 FornecedorService fornecedorService,
+								 MateriaPrimaService materiaPrimaService) {
 		return args -> {
 
 			// ============================================
-			// SECÇAO EMPRESAS (criar primeiro para ter IDs)
+			// SECÇÃO EMPRESAS
 			// ============================================
-			Empresa e1 = null, e2 = null, e3 = null, e4 = null, e5 = null;
+			System.out.println("\n========== A CRIAR EMPRESAS ==========");
+
+			Empresa e1 = null, e2 = null, e3 = null;
 
 			try {
 				e1 = empresaService.createEmpresa(
-						"Lacticínios Porto S.A.",
-						"123456789",
-						"+351912345678",
-						"Rua da Industria, 45",
-						"4000-123",
-						"Porto"
+						"Lacticínios Porto S.A.", "123456789",
+						"+351912345678", "Rua da Industria, 45", "4000-123", "Porto"
 				);
 				System.out.println("✅ Empresa criada: " + e1.getNomeEmpresa() + " | ID: " + e1.getId());
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Erro ao criar empresa 1: " + e.getMessage());
+				System.out.println("⚠️ Erro empresa 1: " + e.getMessage());
 			}
 
 			try {
 				e2 = empresaService.createEmpresa(
-						"Frutas e Laticínios Norte Lda.",
-						"987654321",
-						"+351913456789",
-						"Avenida das Flores, 12",
-						"4050-210",
-						"Porto"
+						"Frutas e Laticínios Norte Lda.", "987654321",
+						"+351913456789", "Avenida das Flores, 12", "4050-210", "Porto"
 				);
 				System.out.println("✅ Empresa criada: " + e2.getNomeEmpresa() + " | ID: " + e2.getId());
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Erro ao criar empresa 2: " + e.getMessage());
+				System.out.println("⚠️ Erro empresa 2: " + e.getMessage());
 			}
 
 			try {
 				e3 = empresaService.createEmpresa(
-						"Iogurtes e Compotas Algarve S.A.",
-						"112233445",
-						"+351914567890",
-						"Estrada Nacional 125, 200",
-						"8000-456",
-						"Faro"
+						"Iogurtes e Compotas Algarve S.A.", "112233445",
+						"+351914567890", "Estrada Nacional 125, 200", "8000-456", "Faro"
 				);
 				System.out.println("✅ Empresa criada: " + e3.getNomeEmpresa() + " | ID: " + e3.getId());
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Erro ao criar empresa 3: " + e.getMessage());
-			}
-
-			try {
-				e4 = empresaService.createEmpresa(
-						"Laticínios do Minho Lda.",
-						"556677889",
-						"+351915678901",
-						"Rua do Comércio, 33",
-						"4700-320",
-						"Braga"
-				);
-				System.out.println("✅ Empresa criada: " + e4.getNomeEmpresa() + " | ID: " + e4.getId());
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Erro ao criar empresa 4: " + e.getMessage());
-			}
-
-			try {
-				e5 = empresaService.createEmpresa(
-						"Laticínios Serra da Estrela",
-						"998877665",
-						"",
-						"Avenida das Montanhas, 5",
-						"6200-150",
-						"Covilhã"
-				);
-				System.out.println("✅ Empresa criada: " + e5.getNomeEmpresa() + " | ID: " + e5.getId());
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Erro ao criar empresa 5: " + e.getMessage());
+				System.out.println("⚠️ Erro empresa 3: " + e.getMessage());
 			}
 
 			// ============================================
-			// SECÇAO USERS (com empresaId)
+			// SECÇÃO USERS
 			// ============================================
+			System.out.println("\n========== A CRIAR USERS ==========");
 
 			UUID empresaId1 = e1 != null ? e1.getId() : null;
 			UUID empresaId2 = e2 != null ? e2.getId() : null;
 			UUID empresaId3 = e3 != null ? e3.getId() : null;
-			UUID empresaId4 = null;
 
-			// 1. João Silva – password fraca (inválida) para teste
+			// ADMIN sem empresa
 			try {
-				User u1 = userService.createUser(
-						"João Silva",
-						"joao.silva@empresa.com",
-						"123", // password fraca - deve falhar
-						TurnoTipo.MANHA,
-						LocalDate.of(2024, 1, 15),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId1
-				);
-				System.out.println("✅ User criado: " + u1.getNome());
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou João Silva (password inválida): " + e.getMessage());
-			}
-
-			// 2. Maria Costa – ADMIN sem empresa
-			try {
-				User u2 = userService.createUser(
-						"Maria Costa",
-						"maria.costa@empresa.com",
-						"MARIACOSTaA_!2",
-						null,
-						LocalDate.of(2023, 5, 10),
+				User admin = userService.createUser(
+						"Maria Costa", "maria.costa@empresa.com", "MariaCosta@123",
+						null, LocalDate.of(2023, 5, 10),
 						List.of(new UserRole(UserRoleType.ADMIN)),
 						null
 				);
-				System.out.println("✅ User criado: " + u2.getNome() + " | Role: ADMIN");
+				System.out.println("✅ Admin criado: " + admin.getNome());
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Maria Costa: " + e.getMessage());
+				System.out.println("⚠️ Erro admin: " + e.getMessage());
 			}
 
-			// 3. Pedro Santos – EMPRESA (representante de empresa)
+			// FUNCIONARIO turno MANHA
 			try {
-				User u3 = userService.createUser(
-						"Pedro Santos",
-						"pedro.santos@empresa.com",
-						"PedroSantos12!",
-						null,
-						LocalDate.of(2022, 8, 20),
+				List<UserRole> roles = new ArrayList<>();
+				roles.add(new UserRole(UserRoleType.FUNCIONARIO));
+
+				User f1 = userService.createUser(
+						"Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123",
+						TurnoTipo.MANHA, LocalDate.of(2024, 3, 1),
+						roles, null
+				);
+				System.out.println("✅ Funcionario criado: " + f1.getNome() + " | Turno: MANHA");
+			} catch (IllegalArgumentException e) {
+				System.out.println("⚠️ Erro funcionario 1: " + e.getMessage());
+			}
+
+			// FUNCIONARIO turno NOITE
+			try {
+				User f2 = userService.createUser(
+						"Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024",
+						TurnoTipo.NOITE, LocalDate.of(2023, 11, 15),
+						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
+						null
+				);
+				System.out.println("✅ Funcionario criado: " + f2.getNome() + " | Turno: NOITE");
+			} catch (IllegalArgumentException e) {
+				System.out.println("⚠️ Erro funcionario 2: " + e.getMessage());
+			}
+
+			// EMPRESA com empresa associada
+			try {
+				User ue1 = userService.createUser(
+						"Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12",
+						null, null,
+						List.of(new UserRole(UserRoleType.EMPRESA)),
+						empresaId1
+				);
+				System.out.println("✅ User empresa criado: " + ue1.getNome() + " | Empresa: " + e1.getNomeEmpresa());
+			} catch (IllegalArgumentException e) {
+				System.out.println("⚠️ Erro user empresa 1: " + e.getMessage());
+			}
+
+			try {
+				User ue2 = userService.createUser(
+						"Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@99",
+						null, null,
 						List.of(new UserRole(UserRoleType.EMPRESA)),
 						empresaId2
 				);
-				System.out.println("✅ User criado: " + u3.getNome() + " | Role: EMPRESA");
+				System.out.println("✅ User empresa criado: " + ue2.getNome() + " | Empresa: " + e2.getNomeEmpresa());
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Pedro Santos: " + e.getMessage());
+				System.out.println("⚠️ Erro user empresa 2: " + e.getMessage());
 			}
 
-			// 4. Ana Ferreira – FUNCIONARIO com turno TARDE
+			// Teste password fraca (deve falhar)
 			try {
-				User u4 = userService.createUser(
-						"Ana Ferreira",
-						"ana.ferreira@empresa.com",
-						"AnaFerreca12#",
-						TurnoTipo.TARDE,
-						LocalDate.of(2024, 3, 1),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId1
-				);
-				System.out.println("✅ User criado: " + u4.getNome() + " | Turno: TARDE");
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Ana Ferreira: " + e.getMessage());
-			}
-
-			// 5. Teste de user com password inválida
-			try {
-				User u5 = userService.createUser(
-						"Teste Erro",
-						"erro@empresa.com",
-						"abcd",
-						null,
-						LocalDate.of(2024, 1, 1),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId3
-				);
-				System.out.println("✅ User criado: " + u5.getNome());
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Teste Erro (password inválida): " + e.getMessage());
-			}
-
-			// 6. Camila Amorim – multiplas roles (FUNCIONARIO + ADMIN)
-			try {
-				List<UserRole> camilaRoles = new ArrayList<>();
-				camilaRoles.add(new UserRole(UserRoleType.FUNCIONARIO));
-				camilaRoles.add(new UserRole(UserRoleType.ADMIN));
-
-				User u6 = userService.createUser(
-						"Camila Amorim",
-						"camila.amorim@empresa.com",
-						"CamilaAmorim2030_!",
-						TurnoTipo.TARDE,
-						LocalDate.of(2024, 3, 1),
-						camilaRoles,
+				userService.createUser(
+						"Teste Erro", "erro@empresa.com", "123",
+						null, null,
+						List.of(new UserRole(UserRoleType.ADMIN)),
 						null
 				);
-				System.out.println("✅ User criado: " + u6.getNome() + " | Roles: FUNCIONARIO + ADMIN");
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Camila Amorim: " + e.getMessage());
+				System.out.println("⚠️ Esperado - password fraca: " + e.getMessage());
 			}
 
-			// 7. Bruno Lima – FUNCIONARIO turno NOITE
+			// Teste EMPRESA sem empresaId (deve falhar)
 			try {
-				User u7 = userService.createUser(
-						"Bruno Lima",
-						"bruno.lima@empresa.com",
-						"BrunoLima2024@",
-						TurnoTipo.NOITE,
-						LocalDate.of(2023, 11, 15),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId3
+				userService.createUser(
+						"Teste Empresa Sem ID", "semid@empresa.com", "TesteSemId@1",
+						null, null,
+						List.of(new UserRole(UserRoleType.EMPRESA)),
+						null
 				);
-				System.out.println("✅ User criado: " + u7.getNome() + " | Turno: NOITE");
 			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Bruno Lima: " + e.getMessage());
-			}
-
-			// 8. Carla Mendes – FUNCIONARIO sem turno definido
-			try {
-				User u8 = userService.createUser(
-						"Carla Mendes",
-						"carla.mendes@empresa.com",
-						"CarlaMendes#99",
-						null,
-						LocalDate.of(2024, 6, 1),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId4
-				);
-				System.out.println("✅ User criado: " + u8.getNome() + " | Sem turno definido");
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Carla Mendes: " + e.getMessage());
-			}
-
-			// 9. Teste de email duplicado (se correres 2x, deve falhar na 2ª)
-			try {
-				User u9 = userService.createUser(
-						"Duplicado Teste",
-						"joao.silva@empresa.com", // mesmo email do u1
-						"Duplicado123!",
-						TurnoTipo.MANHA,
-						LocalDate.of(2024, 1, 1),
-						List.of(new UserRole(UserRoleType.FUNCIONARIO)),
-						empresaId1
-				);
-				System.out.println("✅ User criado: " + u9.getNome());
-			} catch (IllegalArgumentException e) {
-				System.out.println("⚠️ Não criou Duplicado Teste (email duplicado?): " + e.getMessage());
+				System.out.println("⚠️ Esperado - empresa sem ID: " + e.getMessage());
 			}
 
 			// ============================================
-			// TESTES DE LEITURA (GET ALL)
+			// SECÇÃO FORNECEDORES
+			// ============================================
+			System.out.println("\n========== A CRIAR FORNECEDORES ==========");
+
+			Fornecedor forn1 = null, forn2 = null;
+
+			try {
+				forn1 = fornecedorService.createFornecedor(
+						"Agrilac S.A.", "501234567",
+						"agrilac@fornecedor.com", "+351910000001",
+						"Rua dos Laticínios, 10",
+						List.of(
+								new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 12, 31)),
+								new FornecedorCertificacao(TipoCertificacao.HACCP, "HACCP Alimentar", LocalDate.of(2026, 6, 30))
+						)
+				);
+				System.out.println("✅ Fornecedor criado: " + forn1.getNome() + " | ID: " + forn1.getId());
+			} catch (IllegalArgumentException e) {
+				System.out.println("⚠️ Erro fornecedor 1: " + e.getMessage());
+			}
+
+			try {
+				forn2 = fornecedorService.createFornecedor(
+						"BioLeite Lda.", "509876543",
+						"bioleite@fornecedor.com", "+351910000002",
+						"Avenida do Campo, 55",
+						List.of(
+								new FornecedorCertificacao(TipoCertificacao.BIO, "Certificação Biológica", LocalDate.of(2026, 3, 15))
+						)
+				);
+				System.out.println("✅ Fornecedor criado: " + forn2.getNome() + " | ID: " + forn2.getId());
+			} catch (IllegalArgumentException e) {
+				System.out.println("⚠️ Erro fornecedor 2: " + e.getMessage());
+			}
+
+			// ============================================
+			// SECÇÃO MATERIAS PRIMAS
+			// ============================================
+            System.out.println("\n========== A CRIAR MATÉRIAS PRIMAS ==========");
+
+            UUID fornId1 = forn1 != null ? forn1.getId() : null;
+            UUID fornId2 = forn2 != null ? forn2.getId() : null;
+
+            Object[][] materias = {
+                    // BASES
+                    {"Leite de Vaca",         "L",  TipoMateriaPrima.BASES,   "5000.000", "1000.000", "0.490",  fornId1},
+                    {"Leite em Pó Inteira",   "kg", TipoMateriaPrima.BASES,    "200.000",  "50.000",   "3.200",  fornId1},
+                    {"Fermento Lácteo",       "kg", TipoMateriaPrima.BASES,    "20.000",   "5.000",    "18.000", fornId1},
+                    {"Embalagem Iogurte 125g","un", TipoMateriaPrima.OUTRO,     "50000.000","10000.000","0.045",  fornId1},
+                    // ADOÇANTES
+                    {"Açúcar Branco",         "kg", TipoMateriaPrima.ADOCANTES, "300.000",  "80.000",   "0.850",  fornId1},
+                    {"Mel",                   "kg", TipoMateriaPrima.ADOCANTES,   "50.000",   "10.000",   "4.500",  fornId2},
+                    // SABORES / FRUTAS
+                    {"Polpa de Morango",      "kg", TipoMateriaPrima.SABOR,     "150.000",  "30.000",   "2.100",  fornId2},
+                    {"Polpa de Pêssego",      "kg", TipoMateriaPrima.SABOR,     "150.000",  "30.000",   "1.900",  fornId2},
+                    {"Polpa de Framboesa",    "kg", TipoMateriaPrima.SABOR,     "100.000",  "20.000",   "3.500",  fornId2},
+                    {"Extrato de Baunilha",   "kg", TipoMateriaPrima.SABOR,"10.000", "3.000",    "22.000", fornId2},
+                    {"Cacau em Pó",           "kg", TipoMateriaPrima.SABOR, "40.000",   "10.000",   "5.800",  fornId2},
+            };
+
+            for (Object[] m : materias) {
+                try {
+                    MateriaPrima mp = materiaPrimaService.createMateriaPrima(
+                            (String) m[0],
+                            (String) m[1],
+                            (TipoMateriaPrima) m[2],
+                            new BigDecimal((String) m[3]),
+                            new BigDecimal((String) m[4]),
+                            new BigDecimal((String) m[5]),
+                            (UUID) m[6]
+                    );
+                    System.out.println("✅ Matéria prima criada: " + mp.getNome() + " | Stock: " + mp.getStockAtual());
+                } catch (IllegalArgumentException e) {
+                    System.out.println("⚠️ Erro matéria prima " + m[0] + ": " + e.getMessage());
+                }
+            }
+
+			// ============================================
+			// LISTAGENS FINAIS
 			// ============================================
 			System.out.println("\n========== LISTAGEM DE EMPRESAS ==========");
-			List<Empresa> empresas = empresaService.getAll();
-			empresas.forEach(e -> System.out.println("📌 " + e.getNomeEmpresa() + " | " + e.getCidade()));
+			empresaService.getAll().forEach(e ->
+					System.out.println("📌 " + e.getNomeEmpresa() + " | " + e.getCidade()));
 
 			System.out.println("\n========== LISTAGEM DE USERS ==========");
-			List<User> users = userService.getAll();
-			users.forEach(u -> System.out.println("👤 " + u.getNome() + " | " + u.getEmail() + " | Empresa: " +
-					(u.getEmpresa() != null ? u.getEmpresa().getNomeEmpresa() : "N/A")));
+			userService.getAll().forEach(u ->
+					System.out.println("👤 " + u.getNome() + " | " + u.getEmail() + " | Empresa: " +
+							(u.getEmpresa() != null ? u.getEmpresa().getNomeEmpresa() : "N/A")));
 
+			System.out.println("\n========== LISTAGEM DE FORNECEDORES ==========");
+			fornecedorService.getAll().forEach(f ->
+					System.out.println("🏭 " + f.getNome() + " | NIF: " + f.getNif()));
+
+			System.out.println("\n========== LISTAGEM DE MATÉRIAS PRIMAS ==========");
+			materiaPrimaService.getAll().forEach(mp ->
+					System.out.println("🧴 " + mp.getNome() + " | Stock: " + mp.getStockAtual() + " " + mp.getUnidade()));
 		};
 	}
 }
