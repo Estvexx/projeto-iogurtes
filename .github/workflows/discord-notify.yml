@@ -1,28 +1,57 @@
-name: Notificar Discord
+name: 📢 Notificação Discord
 
-# Quando este workflow será ativado
 on:
-  push: # Em qualquer push...
-    branches: ["main"] # ... para a branch 'main' (altera para 'master' se for o caso)
+  push:
+    branches: [main, develop]
 
 jobs:
-  send-notification:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      # Passo necessário para conseguirmos ver informação do commit (como a mensagem)
-      - name: Checkout do código
+      - name: 📥 Buscar código
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
-      # Passo que envia a mensagem para o Discord
-      - name: Enviar notificação para o Discord
-        uses: Ilshidur/action-discord@0.3.2 # Uma action simples e popular [citation:3]
+      - name: 📋 Preparar mensagem
+        id: prep
+        run: |
+          # Buscar mensagem do commit (versão mais robusta)
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s" | head -1)
+          
+          # Se não conseguir buscar com git log, tenta outra forma
+          if [ -z "$COMMIT_MSG" ]; then
+            COMMIT_MSG="${{ github.event.head_commit.message }}"
+          fi
+          
+          # Buscar primeiros 5 ficheiros alterados
+          FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | head -5 | sed 's/^/• `/;s/$/`\n/')
+          
+          # Se não conseguir buscar ficheiros, usa mensagem alternativa
+          if [ -z "$FILES" ]; then
+            FILES="• (Não foi possível listar os ficheiros)"
+          fi
+          
+          # Contar total de ficheiros
+          TOTAL_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null | wc -l)
+          if [ "$TOTAL_FILES" -eq 0 ]; then
+            TOTAL_FILES="vários"
+          fi
+          
+          echo "commit_msg=$COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "total_files=$TOTAL_FILES" >> $GITHUB_OUTPUT
+
+      - name: 💬 Enviar para o Discord
+        uses: Ilshidur/action-discord@0.3.2
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }} # Busca o segredo que criaste
-          # A mensagem pode usar informações do evento. O github.event é um objeto com todos os dados do push. [citation:3]
-          DISCORD_MESSAGE:
-            | # O símbolo | permite escrever uma mensagem em várias linhas
-            **🚀 Novo Push no repositório ${{ github.repository }}!**
-            **Branch:** `${{ github.ref_name }}`
-            **Autor:** ${{ github.actor }}
-            **Mensagem do Commit:** ${{ github.event.head_commit.message }}
-            **URL do Commit:** ${{ github.event.head_commit.url }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_MESSAGE: |
+            🍦 **Projeto Iogurtes - Novo push!**
+            
+            **👤 Quem:** `${{ github.actor }}`
+            **🌿 Branch:** `${{ github.ref_name }}`
+            
+            **💬 Mensagem:** 
