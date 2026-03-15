@@ -1,19 +1,25 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "materias_primas")
 public class MateriaPrima {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "nome", nullable = false, length = 120)
     private String nome;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoMateriaPrima tipo;
 
     @Column(name = "unidade", length = 10)
     private String unidade;
@@ -28,7 +34,7 @@ public class MateriaPrima {
     private BigDecimal precoUnitario = BigDecimal.ZERO;
 
     @ManyToOne
-    @JoinColumn(name = "fornecedor_id")
+    @JoinColumn(name = "fornecedor_id", nullable = false)
     private Fornecedor fornecedor;
 
     @Column(name = "createdat")
@@ -40,10 +46,11 @@ public class MateriaPrima {
     public MateriaPrima() {}
 
     // utilizo o bigdecimal devido a precisão dos valores
-    public MateriaPrima(String nome, String unidade, BigDecimal stockAtual,
+    public MateriaPrima(String nome, TipoMateriaPrima tipo, String unidade, BigDecimal stockAtual,
                         BigDecimal stockMinimo, BigDecimal precoUnitario,
                         Fornecedor fornecedor) {
         this.nome = nome;
+        this.tipo = tipo;
         this.unidade = unidade;
         this.stockAtual = stockAtual;
         this.stockMinimo = stockMinimo;
@@ -52,8 +59,9 @@ public class MateriaPrima {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public String getNome() { return nome; }
+    public TipoMateriaPrima getTipo() { return tipo; }
     public String getUnidade() { return unidade; }
     public BigDecimal getStockAtual() { return stockAtual; }
     public BigDecimal getStockMinimo() { return stockMinimo; }
@@ -62,8 +70,9 @@ public class MateriaPrima {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
+    public void setTipo(TipoMateriaPrima tipo) { this.tipo = tipo; }
     public void setUnidade(String unidade) { this.unidade = unidade; }
     public void setStockAtual(BigDecimal stockAtual) { this.stockAtual = stockAtual; }
     public void setStockMinimo(BigDecimal stockMinimo) { this.stockMinimo = stockMinimo; }

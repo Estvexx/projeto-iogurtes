@@ -1,17 +1,16 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.repository;
 import org.springframework.stereotype.Repository;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.Fornecedor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface FornecedorRepository extends JpaRepository<Fornecedor, UUID> {
 
-    Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+    boolean existsByNif(String nif);
 
 }

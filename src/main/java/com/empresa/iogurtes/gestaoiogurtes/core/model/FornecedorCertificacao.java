@@ -4,14 +4,15 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoCertificacao;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "fornecedor_certificacoes")
 public class FornecedorCertificacao {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "fornecedor_id")
@@ -32,6 +33,12 @@ public class FornecedorCertificacao {
 
     public FornecedorCertificacao() {}
 
+    public FornecedorCertificacao(TipoCertificacao tipo, String descricao, LocalDate validade) {
+        this.tipo = tipo;
+        this.descricao = descricao;
+        this.validade = validade;
+        this.createdAt = LocalDateTime.now();
+    }
     public FornecedorCertificacao(Fornecedor fornecedor, TipoCertificacao tipo,
                                   String descricao, LocalDate validade) {
         this.fornecedor = fornecedor;
@@ -41,14 +48,14 @@ public class FornecedorCertificacao {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public Fornecedor getFornecedor() { return fornecedor; }
     public TipoCertificacao getTipo() { return tipo; }
     public String getDescricao() { return descricao; }
     public LocalDate getValidade() { return validade; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
     public void setTipo(TipoCertificacao tipo) { this.tipo = tipo; }
     public void setDescricao(String descricao) { this.descricao = descricao; }

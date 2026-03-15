@@ -3,14 +3,15 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "movimentos_stock_pf")
 public class MovimentoStockPF {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
@@ -45,7 +46,7 @@ public class MovimentoStockPF {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Integer getId() { return id; }
+    public UUID getId() { return id; }
     public User getUser() { return user; }
     public ProdutoFinal getProduto() { return produto; }
     public TipoMovimentoPF getTipo() { return tipo; }
@@ -53,7 +54,7 @@ public class MovimentoStockPF {
     public String getObservacao() { return observacao; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(Integer id) { this.id = id; }
+    public void setId(UUID id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setTipo(TipoMovimentoPF tipo) { this.tipo = tipo; }
