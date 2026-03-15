@@ -11,7 +11,7 @@ import java.util.UUID;
 public class ProdutoFinal {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "codigo_sku", unique = true, nullable = false, length = 50)

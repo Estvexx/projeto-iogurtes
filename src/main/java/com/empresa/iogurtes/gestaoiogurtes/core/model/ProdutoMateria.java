@@ -38,6 +38,12 @@ public class ProdutoMateria {
         this.createdAt = LocalDateTime.now();
     }
 
+    public ProdutoMateria(MateriaPrima materia, BigDecimal quantidadePorUnidadeProduto) {
+        this.materia = materia;
+        this.quantidadePorUnidadeProduto = quantidadePorUnidadeProduto;
+        this.createdAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public ProdutoFinal getProduto() { return produto; }
     public MateriaPrima getMateria() { return materia; }
