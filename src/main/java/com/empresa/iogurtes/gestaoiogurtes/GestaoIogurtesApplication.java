@@ -208,7 +208,7 @@ public class GestaoIogurtesApplication {
 						TurnoTipo.TARDE,
 						LocalDate.of(2024, 3, 1),
 						camilaRoles,
-						empresaId2
+						null
 				);
 				System.out.println("✅ User criado: " + u6.getNome() + " | Roles: FUNCIONARIO + ADMIN");
 			} catch (IllegalArgumentException e) {
