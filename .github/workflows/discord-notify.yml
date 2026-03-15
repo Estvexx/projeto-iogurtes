@@ -1,0 +1,28 @@
+name: Notificar Discord
+
+# Quando este workflow será ativado
+on:
+  push: # Em qualquer push...
+    branches: ["main"] # ... para a branch 'main' (altera para 'master' se for o caso)
+
+jobs:
+  send-notification:
+    runs-on: ubuntu-latest
+    steps:
+      # Passo necessário para conseguirmos ver informação do commit (como a mensagem)
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Passo que envia a mensagem para o Discord
+      - name: Enviar notificação para o Discord
+        uses: Ilshidur/action-discord@0.3.2 # Uma action simples e popular [citation:3]
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }} # Busca o segredo que criaste
+          # A mensagem pode usar informações do evento. O github.event é um objeto com todos os dados do push. [citation:3]
+          DISCORD_MESSAGE:
+            | # O símbolo | permite escrever uma mensagem em várias linhas
+            **🚀 Novo Push no repositório ${{ github.repository }}!**
+            **Branch:** `${{ github.ref_name }}`
+            **Autor:** ${{ github.actor }}
+            **Mensagem do Commit:** ${{ github.event.head_commit.message }}
+            **URL do Commit:** ${{ github.event.head_commit.url }}
