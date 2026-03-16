@@ -55,10 +55,20 @@ public class User {
         this.passwordHash = passwordHash;
         this.turno = turno;
         this.dataAdmissao = dataAdmissao;
-        this.createdAt = LocalDateTime.now();
     }
 
-    public UUID getId() { return id; }
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    public UUID getId(){ return id; }
     public Empresa getEmpresa() { return empresa; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }

@@ -44,7 +44,17 @@ public class EncomendaOrdem {
         this.encomendaPallet = encomendaPallet;
         this.quantidadePallets = quantidadePallets;
         this.estado = EstadoEncomendaOrdem.pendente;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

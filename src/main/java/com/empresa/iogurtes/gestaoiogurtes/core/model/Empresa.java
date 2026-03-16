@@ -1,6 +1,8 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -30,6 +32,12 @@ public class Empresa {
     @Column(name = "cidade", length = 100)
     private String cidade;
 
+    @Column(name = "createdat")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updatedat")
+    private LocalDateTime updatedAt;
+
     public Empresa() {}
 
     public Empresa(String nomeEmpresa, String nipc, String telefone,
@@ -40,6 +48,17 @@ public class Empresa {
         this.morada = morada;
         this.codigoPostal = codigoPostal;
         this.cidade = cidade;
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

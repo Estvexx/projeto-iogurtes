@@ -7,6 +7,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepositor
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.ProdutoFinalValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +28,7 @@ public class ProdutoFinalService {
         this.produtoFinalValidator = produtoFinalValidator;
     }
 
+    @Transactional
     public ProdutoFinal createProduto(String codigoSku, String nome, String descricao,
                                       Integer validadeDias, BigDecimal precoVenda,
                                       BigDecimal precoPorKg, Integer quantidadeLote,
@@ -46,6 +48,7 @@ public class ProdutoFinalService {
         return produtoFinalRepository.save(produto);
     }
 
+    @Transactional
     public ProdutoFinal updateProduto(UUID id, String nome, String descricao,
                                       Integer validadeDias, BigDecimal precoVenda,
                                       BigDecimal precoPorKg, Integer quantidadeLote,
@@ -76,6 +79,7 @@ public class ProdutoFinalService {
         return produtoFinalRepository.findAll();
     }
 
+    @Transactional
     public void delete(UUID id) {
         ProdutoFinal produto = produtoFinalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado!"));

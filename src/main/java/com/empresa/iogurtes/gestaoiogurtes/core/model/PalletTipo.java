@@ -30,7 +30,17 @@ public class PalletTipo {
     public PalletTipo(String nome, BigDecimal capacidadeKg) {
         this.nome = nome;
         this.capacidadeKg = capacidadeKg;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

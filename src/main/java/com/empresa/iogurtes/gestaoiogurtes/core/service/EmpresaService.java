@@ -3,6 +3,7 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.EmpresaValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 
 import java.util.UUID;
@@ -19,6 +20,7 @@ public class EmpresaService {
         this.empresaValidator = empresaValidator;
     }
 
+    @Transactional
     public Empresa createEmpresa(String nomeEmpresa, String nipc, String telefone,
                                 String morada, String codigoPostal, String cidade) {
 
@@ -37,6 +39,7 @@ public class EmpresaService {
         return empresaRepository.findAll();
     }
 
+    @Transactional
     public Empresa update(UUID id, String nomeEmpresa, String nipc, String telefone,
                           String morada, String codigoPostal, String cidade) {
 
@@ -53,6 +56,7 @@ public class EmpresaService {
         return empresaRepository.save(empresa);
     }
 
+    @Transactional
     public void delete(UUID id) {
         // Coloquei o get para simplesmente nao poder dar delete a algo que não existe
         Empresa empresa = getById(id);

@@ -7,6 +7,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.MateriaPrimaValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -27,6 +28,7 @@ public class MateriaPrimaService {
         this.fornecedorRepository = fornecedorRepository;
     }
 
+    @Transactional
     public MateriaPrima createMateriaPrima(String nome, String unidade,
                                            TipoMateriaPrima tipo,
                                            BigDecimal stockAtual, BigDecimal stockMinimo,
@@ -40,6 +42,7 @@ public class MateriaPrimaService {
         return materiaPrimaRepository.save(materiaPrima);
     }
 
+    @Transactional
     public MateriaPrima updateMateriaPrima(UUID id, String nome, String unidade,
                                            TipoMateriaPrima tipo,
                                            BigDecimal stockMinimo, BigDecimal precoUnitario,
@@ -71,6 +74,7 @@ public class MateriaPrimaService {
         return materiaPrimaRepository.findAll();
     }
 
+    @Transactional
     public void delete(UUID id) {
         MateriaPrima materiaPrima = materiaPrimaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Matéria prima não encontrada"));
