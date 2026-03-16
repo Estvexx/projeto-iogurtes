@@ -8,6 +8,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,7 @@ public class UserService {
         this.empresaRepository = empresaRepository;
     }
 
+    @Transactional
     public User createUser(String nome,
                            String email,
                            String password,
@@ -65,6 +67,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
     public User updateUser(UUID id, String nome, TurnoTipo turno) {
 
         User user = userRepository.findById(id)
@@ -87,6 +90,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    @Transactional
     public void delete(UUID id) {
 
         User user = userRepository.findById(id)

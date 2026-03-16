@@ -53,7 +53,17 @@ public class EncomendaPallet {
         this.palletTipo = palletTipo;
         this.quantidadePallets = quantidadePallets;
         this.precoPorPallet = precoPorPallet;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

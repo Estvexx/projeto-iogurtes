@@ -44,7 +44,11 @@ public class MovimentoStockMP {
         this.tipo = tipo;
         this.quantidade = quantidade;
         this.observacao = observacao;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

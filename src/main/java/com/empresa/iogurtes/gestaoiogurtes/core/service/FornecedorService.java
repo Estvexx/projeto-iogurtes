@@ -5,6 +5,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.FornecedorCertificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.FornecedorValidator;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class FornecedorService {
         this.fornecedorValidator = fornecedorValidator;
     }
 
+    @Transactional
     public Fornecedor createFornecedor(String nome, String nif, String email,
                                        String telefone, String morada, List<FornecedorCertificacao> certificacoes) {
 
@@ -35,6 +37,7 @@ public class FornecedorService {
         return fornecedorRepository.save(fornecedor);
     }
 
+    @Transactional
     public Fornecedor updateFornecedor(UUID id, String nome, String nif, String email,
                                        String telefone, String morada) {
 
@@ -61,6 +64,7 @@ public class FornecedorService {
         return fornecedorRepository.findAll();
     }
 
+    @Transactional
     public void delete(UUID id) {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado"));

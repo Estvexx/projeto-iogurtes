@@ -36,7 +36,11 @@ public class ConsumoProducao {
         this.ordem = ordem;
         this.materia = materia;
         this.quantidadeKg = quantidadeKg;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

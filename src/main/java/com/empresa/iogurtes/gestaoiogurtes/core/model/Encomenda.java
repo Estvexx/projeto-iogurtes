@@ -46,7 +46,17 @@ public class Encomenda {
         this.totalPreco = totalPreco;
         this.estado = EstadoEncomenda.pendente;
         this.dataEncomenda = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

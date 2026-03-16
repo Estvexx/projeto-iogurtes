@@ -35,13 +35,16 @@ public class ProdutoMateria {
         this.produto = produto;
         this.materia = materia;
         this.quantidadePorUnidadeProduto = quantidadePorUnidadeProduto;
-        this.createdAt = LocalDateTime.now();
     }
 
     public ProdutoMateria(MateriaPrima materia, BigDecimal quantidadePorUnidadeProduto) {
         this.materia = materia;
         this.quantidadePorUnidadeProduto = quantidadePorUnidadeProduto;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

@@ -43,7 +43,11 @@ public class MovimentoStockPF {
         this.tipo = tipo;
         this.quantidadeKg = quantidadeKg;
         this.observacao = observacao;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }

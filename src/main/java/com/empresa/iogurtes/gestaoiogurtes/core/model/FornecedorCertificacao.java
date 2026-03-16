@@ -37,7 +37,6 @@ public class FornecedorCertificacao {
         this.tipo = tipo;
         this.descricao = descricao;
         this.validade = validade;
-        this.createdAt = LocalDateTime.now();
     }
     public FornecedorCertificacao(Fornecedor fornecedor, TipoCertificacao tipo,
                                   String descricao, LocalDate validade) {
@@ -45,7 +44,11 @@ public class FornecedorCertificacao {
         this.tipo = tipo;
         this.descricao = descricao;
         this.validade = validade;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    private void onCreate() {
+        createdAt = LocalDateTime.now();
     }
 
     public UUID getId() { return id; }
