@@ -5,6 +5,8 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoFinal;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoMateria;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.ProdutoFinalValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +21,16 @@ public class ProdutoFinalService {
     private final ProdutoFinalRepository produtoFinalRepository;
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final ProdutoFinalValidator produtoFinalValidator;
+    private final ProdutoMateriaRepository produtoMateriaRepository;
 
     public ProdutoFinalService(ProdutoFinalRepository produtoFinalRepository,
                                MateriaPrimaRepository materiaPrimaRepository,
-                               ProdutoFinalValidator produtoFinalValidator) {
+                               ProdutoFinalValidator produtoFinalValidator,
+                               ProdutoMateriaRepository produtoMateriaRepository) {
         this.produtoFinalRepository = produtoFinalRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.produtoFinalValidator = produtoFinalValidator;
+        this.produtoMateriaRepository = produtoMateriaRepository;
     }
 
     @Transactional
@@ -85,5 +90,11 @@ public class ProdutoFinalService {
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado!"));
 
         produtoFinalRepository.delete(produto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProdutoMateria> getMateriasByProdutoId(UUID id) {
+
+        return produtoMateriaRepository.findByProdutoId(id);
     }
 }
