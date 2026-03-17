@@ -44,20 +44,21 @@ public class GestaoIogurtesApplication {
 
 
 			// Secçao de Users
-			User user1 = userService.createUser("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", null, LocalDate.of(2023, 5, 10), List.of(new UserRole(UserRoleType.ADMIN)), null);
-			User user2 = userService.createUser("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", null, LocalDate.of(2022, 8, 15), List.of(new UserRole(UserRoleType.ADMIN)), null);
-			User user3 = userService.createUser("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", TurnoTipo.MANHA, LocalDate.of(2024, 3, 1), List.of(new UserRole(UserRoleType.FUNCIONARIO)), null);
-			User user4 = userService.createUser("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", TurnoTipo.NOITE, LocalDate.of(2023, 11, 15), List.of(new UserRole(UserRoleType.FUNCIONARIO)), null);
-			User user5 = userService.createUser("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", null, null, List.of(new UserRole(UserRoleType.EMPRESA)), empresaId1);
-			User user6 = userService.createUser("Sofia Ribeiro", "sofia.ribeiro@empresa.com", "SofiaRibeiro@99", null, null, List.of(new UserRole(UserRoleType.EMPRESA)), empresaId2);
-			User user7 = userService.createUser("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789",TurnoTipo.MANHA,LocalDate.of(2024, 1, 20),List.of(new UserRole(UserRoleType.ADMIN),  new UserRole(UserRoleType.FUNCIONARIO)), null);
+			User user1 = userService.createUser("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", "TARDE", LocalDate.of(2023, 5, 10), List.of("ADMIN"), null);
+			User user2 = userService.createUser("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", null, LocalDate.of(2022, 8, 15), List.of("ADMIN"), null);
+			User user3 = userService.createUser("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", LocalDate.of(2024, 3, 1), List.of("FUNCIONARIO"), null);
+			User user4 = userService.createUser("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", LocalDate.of(2023, 11, 15), List.of("FUNCIONARIO"), null);
+			User user5 = userService.createUser("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", null, null, List.of("EMPRESA"), empresaId1);
+			User user6 = userService.createUser("Sofia Ribeiro", "sofia.ribeiro@empresa.com", "SofiaRibeiro@99", null, null, List.of("EMPRESA"), empresaId2);
+			User user7 = userService.createUser("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789","MANHA",LocalDate.of(2024, 1, 20),List.of("ADMIN",  "FUNCIONARIO"), null);
 
 			UUID userId1 = user1 != null ? user1.getId() : null;
 			UUID userId2 = user2 != null ? user2.getId() : null;
 			UUID userId3 = user3 != null ? user3.getId() : null;
 			UUID userId4 = user4 != null ? user4.getId() : null;
 
-			User user1Att = userService.updateUser(userId1, "Maria Costinha", TurnoTipo.NOITE);
+			User user1Att = userService.updateUser(userId1, "Maria Costinha", "NOITE", List.of("ADMIN", "FUNCIONARIO"));
+
 			// Secçao de Fornecedores
 			Fornecedor forn1 = fornecedorService.createFornecedor("Agrilac S.A.", "501234567", "agrilac@fornecedor.com", "+351910000001", "Rua dos Laticínios, 10, Porto", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 12, 31))));
 			Fornecedor forn2 = fornecedorService.createFornecedor("BioLeite Lda", "509876543", "bioleite@fornecedor.com", "+351910000002", "Avenida do Campo, 55, Braga", List.of(new FornecedorCertificacao(TipoCertificacao.BIO, "Certificação Biológica", LocalDate.of(2026, 4, 15)), new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 22000", LocalDate.of(2026, 9, 20))));
@@ -100,39 +101,49 @@ public class GestaoIogurtesApplication {
 			MovimentoStockMP m13 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("5.000"), "Saída para produção");
 
 			// Produtos Finais
-			ProdutoFinal pNatural = produtoFinalService.createProduto("YOG-NAT-125", "Iogurte Natural", null, 21, new BigDecimal("0.35"), new BigDecimal("2.80"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.1000")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0030")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
+			ProdutoFinal pNatural = produtoFinalService.createProduto(
+					"YOG-NAT-125",
+					"Iogurte Natural",
+					null,
+					21,
+					new BigDecimal("0.35"),
+					new BigDecimal("2.80"),
+					1,
+					List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.1000")),
+							new ProdutoMateria(mpLeitePo, new BigDecimal("0.0030")),
+							new ProdutoMateria(mpFermento, new BigDecimal("0.0008")),
+							new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
+
 			ProdutoFinal pMorango = produtoFinalService.createProduto("YOG-MOR-125", "Iogurte de Morango", null, 21, new BigDecimal("0.42"), new BigDecimal("3.36"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0900")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpMorango, new BigDecimal("0.0150")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0080")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 			ProdutoFinal pPessego = produtoFinalService.createProduto("YOG-PES-125", "Iogurte de Pêssego", null, 21, new BigDecimal("0.42"), new BigDecimal("3.36"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0900")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpPessego, new BigDecimal("0.0150")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0080")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 			ProdutoFinal pFramboesa = produtoFinalService.createProduto("YOG-FRA-125", "Iogurte de Framboesa", null, 21, new BigDecimal("0.48"), new BigDecimal("3.84"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0900")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpFramboesa, new BigDecimal("0.0150")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0080")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 			ProdutoFinal pBaunilha = produtoFinalService.createProduto("YOG-BAU-125", "Iogurte de Baunilha", null, 21, new BigDecimal("0.45"), new BigDecimal("3.60"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.1000")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpBaunilha, new BigDecimal("0.0010")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0080")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 			ProdutoFinal pChocolate = produtoFinalService.createProduto("YOG-CHO-125", "Iogurte de Chocolate", null, 21, new BigDecimal("0.45"), new BigDecimal("3.60"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0950")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpCacau, new BigDecimal("0.0080")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0100")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 
-			System.out.println("\n========== LISTAGEM DE PRODUTOS FINAIS ==========");
-			produtoFinalService.getAll().forEach(p ->
-					System.out.println("🧴 " + p.getNome() + " | SKU: " + p.getCodigoSku() + " | Preço: €" + p.getPrecoVenda()));
-
+			UUID ProdutoFinalId1 = pMorango != null ? pMorango.getId() : null;
 			// ============================================
 			// LISTAGENS FINAIS
 			// ============================================
 			System.out.println("\n========== LISTAGEM DE EMPRESAS ==========");
-			empresaService.getAll().forEach(e ->
-					System.out.println("📌 " + e.getNomeEmpresa() + " | " + e.getCidade()));
+			empresaService.getAll().forEach(System.out::println);
 
 			System.out.println("\n========== LISTAGEM DE USERS ==========");
-			userService.getAll().forEach(u ->
-					System.out.println("👤 " + u.getNome() + " | " + u.getEmail()));
+			userService.getAll().forEach(System.out::println);
 
 			System.out.println("\n========== LISTAGEM DE FORNECEDORES ==========");
-			fornecedorService.getAll().forEach(f ->
-					System.out.println("🏭 " + f.getNome() + " | NIF: " + f.getNif()));
+			fornecedorService.getAll().forEach(System.out::println);
 
 			System.out.println("\n========== LISTAGEM DE MATÉRIAS PRIMAS ==========");
-			materiaPrimaService.getAll().forEach(mp ->
-					System.out.println("🧴 " + mp.getNome() + " | Stock: " + mp.getStockAtual() + " " + mp.getUnidade()));
+			materiaPrimaService.getAll().forEach(System.out::println);
 
 			System.out.println("\n========== LISTAGEM DE MOVIMENTOS ==========");
-			movimentoStockMPService.getAll().forEach(m ->
-					System.out.println("📦 " + m.getTipo() + " | " + m.getQuantidade() + " | " + m.getMateria().getNome()));
+			movimentoStockMPService.getAll().forEach(System.out::println);
+
+			System.out.println("\n========== LISTAGEM DE PRODUTOS FINAIS ==========");
+			produtoFinalService.getAll().forEach(System.out::println);
+
+			produtoFinalService.getMateriasByProdutoId(ProdutoFinalId1)
+					.forEach(System.out::println);
 		};
 	}
 }
