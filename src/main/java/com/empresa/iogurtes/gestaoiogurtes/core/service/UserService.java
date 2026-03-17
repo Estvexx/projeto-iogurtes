@@ -11,6 +11,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.expression.Strings;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,13 +38,16 @@ public class UserService {
     public User createUser(String nome,
                            String email,
                            String password,
-                           TurnoTipo turno,
+                           String turno,
                            LocalDate dataAdmissao,
-                           List<UserRole> roles,
+                           List<String> roles,
                            UUID empresaId
                             ) {
 
-        userValidator.validateCreateUser(nome, email,password, turno, dataAdmissao, roles, empresaId);
+        TurnoTipo turnoTipo = userValidator.validateAndParseTurno(turno);
+        List<UserRole> userRoles = userValidator.validateAndParseRoles(roles);
+
+        userValidator.validateCreateUser(nome, email,password, turnoTipo, dataAdmissao, userRoles, empresaId);
 
         String passwordHash = passwordEncoder.encode(password);
         // o getReferenceById é só para passar como objeto empresa o uuid, assim nao retorno o objeto inteiro, evito queries
@@ -54,29 +58,38 @@ public class UserService {
                 nome,
                 email,
                 passwordHash,
-                turno,
+                turnoTipo,
                 dataAdmissao
         );
 
-        for (UserRole role : roles) {
+        for (UserRole role : userRoles) {
             role.setUser(user);
         }
 
-        user.setRoles(roles);
+        user.setRoles(userRoles);
 
         return userRepository.save(user);
     }
 
     @Transactional
-    public User updateUser(UUID id, String nome, TurnoTipo turno) {
+    public User updateUser(UUID id, String nome, String turno, List<String> roles) {
 
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        userValidator.validateUpdateUser(nome, turno, user.getRoles());
+        TurnoTipo turnoTipo = userValidator.validateAndParseTurno(turno);
+        List<UserRole> userRoles = userValidator.validateAndParseRoles(roles);
+        userValidator.validateUpdateUser(nome, turnoTipo, userRoles);
+
+        // limpa as roles antigas e associa as novas ao user
+        user.getRoles().clear();
+        for (UserRole role : userRoles) {
+            role.setUser(user);
+        }
 
         user.setNome(nome);
-        user.setTurno(turno);
+        user.setTurno(turnoTipo);
+        user.setRoles(userRoles);
 
         return userRepository.save(user);
     }

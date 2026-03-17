@@ -97,8 +97,15 @@ public class UserValidator {
         boolean precisaTurno = roles.stream()
                 .anyMatch(role -> role.getRole() == UserRoleType.FUNCIONARIO);
 
+        boolean naoprecisaTurno = roles.stream()
+                .anyMatch(role -> role.getRole() == UserRoleType.EMPRESA);
+
         if (precisaTurno && turno == null) {
             throw new IllegalArgumentException("Funcionarios precisam de turno");
+        }
+
+        if(naoprecisaTurno && turno != null){
+            throw new IllegalArgumentException("Empresas não podem ter turno associado");
         }
     }
 
@@ -116,6 +123,41 @@ public class UserValidator {
 
         if (!isEmpresa && empresaId != null) {
             throw new IllegalArgumentException("Admin e funcionario não podem ter empresa associada!");
+        }
+    }
+
+    public List<UserRole> validateAndParseRoles(List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            throw new IllegalArgumentException("É necessário pelo menos um role"); // InvalidRoleException
+        }
+
+        boolean temEmpresa = roles.stream()
+                .anyMatch(r -> r.equalsIgnoreCase("EMPRESA"));
+        boolean temFuncionario = roles.stream()
+                .anyMatch(r -> r.equalsIgnoreCase("FUNCIONARIO"));
+
+        if (temEmpresa && temFuncionario) {
+            throw new IllegalArgumentException("Um utilizador não pode ser EMPRESA e FUNCIONARIO simultaneamente");
+        }
+
+        return roles.stream()
+                .map(role -> {
+                    try {
+                        return new UserRole(UserRoleType.valueOf(role.toUpperCase()));
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Role inválido: " + role);
+                    }
+                })
+                .toList();
+    }
+
+    public TurnoTipo validateAndParseTurno(String turno) {
+        if (turno == null) return null; // se for opcional
+
+        try {
+            return TurnoTipo.valueOf(turno.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Turno inválido: " + turno);  // InvalidTurnoException
         }
     }
 }

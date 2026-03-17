@@ -25,6 +25,9 @@ public class UserRole {
     @Column(name = "createdat")
     private LocalDateTime createdAt;
 
+    @Column(name = "updatedat")
+    private LocalDateTime updatedAt;
+
     public UserRole() {}
 
     public UserRole(UserRoleType role) {
@@ -36,16 +39,22 @@ public class UserRole {
         createdAt = LocalDateTime.now();
     }
 
+    @PreUpdate
+    private void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
     public UUID getId() { return id; }
     public User getUser() { return user; }
     public UserRoleType getRole() { return role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
 
     public void setId(UUID id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setRole(UserRoleType role) { this.role = role; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     @Override
     public String toString() {
