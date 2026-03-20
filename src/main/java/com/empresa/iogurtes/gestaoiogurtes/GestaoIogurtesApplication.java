@@ -1,16 +1,17 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoCertificacao;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
 import com.empresa.iogurtes.gestaoiogurtes.core.service.*;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,7 +28,9 @@ public class GestaoIogurtesApplication {
 								 FornecedorService fornecedorService,
 								 MateriaPrimaService materiaPrimaService,
 								 MovimentoStockMPService movimentoStockMPService,
-								 ProdutoFinalService produtoFinalService) {
+								 ProdutoFinalService produtoFinalService,
+								 OrdemProducaoService ordemProducaoService
+								 ) {
 		return args -> {
 			// Secçao de Empresa
 			Empresa e1 = empresaService.createEmpresa("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão");
@@ -84,16 +87,16 @@ public class GestaoIogurtesApplication {
 
 			// Movimentos Stock MP
 				// Entradas
-			MovimentoStockMP m1 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("5000.000"), "Entrada inicial de leite");
-			MovimentoStockMP m2 = movimentoStockMPService.registarMovimento(userId3, mpAcucar.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("300.000"), "Entrada inicial de açúcar");
-			MovimentoStockMP m3 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("100.000"), "Entrada inicial leite em pó");
-			MovimentoStockMP m4 = movimentoStockMPService.registarMovimento(userId3, mpFermento.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10.000"), "Entrada inicial fermento");
-			MovimentoStockMP m5 = movimentoStockMPService.registarMovimento(userId4, mpEmbalagem.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("5000.000"), "Entrada inicial embalagens");
-			MovimentoStockMP m6 = movimentoStockMPService.registarMovimento(userId4, mpMorango.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("50.000"), "Entrada inicial polpa morango");
-			MovimentoStockMP m7 = movimentoStockMPService.registarMovimento(userId3, mpPessego.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("40.000"), "Entrada inicial polpa pêssego");
-			MovimentoStockMP m8 = movimentoStockMPService.registarMovimento(userId3, mpFramboesa.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("30.000"), "Entrada inicial polpa framboesa");
-			MovimentoStockMP m9 = movimentoStockMPService.registarMovimento(userId4, mpBaunilha.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("5.000"), "Entrada inicial extrato baunilha");
-			MovimentoStockMP m10 = movimentoStockMPService.registarMovimento(userId3, mpCacau.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("20.000"), "Entrada inicial cacau");
+			MovimentoStockMP m1 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de leite");
+			MovimentoStockMP m2 = movimentoStockMPService.registarMovimento(userId3, mpAcucar.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de açúcar");
+			MovimentoStockMP m3 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial leite em pó");
+			MovimentoStockMP m4 = movimentoStockMPService.registarMovimento(userId3, mpFermento.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial fermento");
+			MovimentoStockMP m5 = movimentoStockMPService.registarMovimento(userId4, mpEmbalagem.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial embalagens");
+			MovimentoStockMP m6 = movimentoStockMPService.registarMovimento(userId4, mpMorango.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial polpa morango");
+			MovimentoStockMP m7 = movimentoStockMPService.registarMovimento(userId3, mpPessego.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial polpa pêssego");
+			MovimentoStockMP m8 = movimentoStockMPService.registarMovimento(userId3, mpFramboesa.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial polpa framboesa");
+			MovimentoStockMP m9 = movimentoStockMPService.registarMovimento(userId4, mpBaunilha.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial extrato baunilha");
+			MovimentoStockMP m10 = movimentoStockMPService.registarMovimento(userId3, mpCacau.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial cacau");
 
 			// Saídas
 			MovimentoStockMP m11 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("100.000"), "Saída para produção");
@@ -120,7 +123,18 @@ public class GestaoIogurtesApplication {
 			ProdutoFinal pBaunilha = produtoFinalService.createProduto("YOG-BAU-125", "Iogurte de Baunilha", null, 21, new BigDecimal("0.45"), new BigDecimal("3.60"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.1000")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpBaunilha, new BigDecimal("0.0010")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0080")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 			ProdutoFinal pChocolate = produtoFinalService.createProduto("YOG-CHO-125", "Iogurte de Chocolate", null, 21, new BigDecimal("0.45"), new BigDecimal("3.60"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0950")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpCacau, new BigDecimal("0.0080")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0100")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 
-			UUID ProdutoFinalId1 = pMorango != null ? pMorango.getId() : null;
+			UUID ProdutoFinalId1 = pNatural != null ? pNatural.getId() : null;
+
+			OrdemProducao ordem = ordemProducaoService.createOrdem(
+					ProdutoFinalId1,
+					userId1,
+					new BigDecimal("100"),  // 100kg de iogurte natural
+					"Primeira ordem de teste"
+			);
+
+
+
+
 			// ============================================
 			// LISTAGENS FINAIS
 			// ============================================
@@ -144,6 +158,7 @@ public class GestaoIogurtesApplication {
 
 			produtoFinalService.getMateriasByProdutoId(ProdutoFinalId1)
 					.forEach(System.out::println);
+
 		};
 	}
 }
