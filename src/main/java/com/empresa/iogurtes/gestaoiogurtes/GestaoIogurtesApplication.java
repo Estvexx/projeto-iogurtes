@@ -142,8 +142,8 @@ public class GestaoIogurtesApplication {
 			System.out.println("\n========== LISTAGEM DE PRODUTOS FINAIS ==========");
 			produtoFinalService.getAll().forEach(System.out::println);
 
-			produtoFinalService.getMateriasByProdutoId(ProdutoFinalId1)
-					.forEach(System.out::println);
+			//produtoFinalService.getMateriasByProdutoId(ProdutoFinalId1)
+			//		.forEach(System.out::println);
 		};
 	}
 }
