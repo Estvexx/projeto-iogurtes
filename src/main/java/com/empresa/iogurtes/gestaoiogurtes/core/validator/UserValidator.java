@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class UserValidator {
@@ -148,7 +149,8 @@ public class UserValidator {
                         throw new IllegalArgumentException("Role inválido: " + role);
                     }
                 })
-                .toList();
+                // retorno collect to list porque a lista tem de ser mutavel
+                .collect(Collectors.toList());
     }
 
     public TurnoTipo validateAndParseTurno(String turno) {

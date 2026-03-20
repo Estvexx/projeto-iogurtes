@@ -91,10 +91,10 @@ public class ProdutoFinalService {
 
         produtoFinalRepository.delete(produto);
     }
-
+/*
     @Transactional(readOnly = true)
     public List<ProdutoMateria> getMateriasByProdutoId(UUID id) {
 
         return produtoMateriaRepository.findByProdutoId(id);
-    }
+    }*/
 }
