@@ -81,15 +81,16 @@ public class UserService {
         List<UserRole> userRoles = userValidator.validateAndParseRoles(roles);
         userValidator.validateUpdateUser(nome, turnoTipo, userRoles);
 
-        // limpa as roles antigas e associa as novas ao user
         user.getRoles().clear();
+        userRepository.flush();
+
         for (UserRole role : userRoles) {
             role.setUser(user);
+            user.getRoles().add(role);
         }
 
         user.setNome(nome);
         user.setTurno(turnoTipo);
-        user.setRoles(userRoles);
 
         return userRepository.save(user);
     }

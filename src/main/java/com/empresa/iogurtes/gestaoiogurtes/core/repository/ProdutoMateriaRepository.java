@@ -7,5 +7,5 @@ import java.util.UUID;
 import java.util.List;
 
 public interface ProdutoMateriaRepository extends JpaRepository<ProdutoMateria, UUID> {
-    List<ProdutoMateria> findByProdutoId(UUID produtoId);
+    //List<ProdutoMateria> findByProdutoId(UUID produtoId);
 }
