@@ -43,15 +43,15 @@ public class OrdemProducaoService {
     @Transactional
     public OrdemProducao createOrdem(UUID userId,
                                      LocalDateTime dataInicio, LocalDateTime dataFim,
-                                     EstadoOrdem estado, String observacoes,
+                                      String observacoes,
                                      List<OrdemProducaoProduto> produtos) {
 
-        validator.validarCreate(userId, dataInicio, dataFim, estado, observacoes, produtos);
+        validator.validarCreate(userId, dataInicio, dataFim, observacoes, produtos);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        OrdemProducao ordem = new OrdemProducao(user, dataInicio, dataFim, estado, observacoes);
+        OrdemProducao ordem = new OrdemProducao(user, dataInicio, dataFim, observacoes);
         OrdemProducao savedOrdem = ordemRepository.save(ordem);
 
         List<ConsumoProducao> todosConsumos = new ArrayList<>();
@@ -106,7 +106,7 @@ public class OrdemProducaoService {
     @Transactional
     public OrdemProducao updateOrdem(UUID id,
                                      LocalDateTime dataInicio, LocalDateTime dataFim,
-                                     EstadoOrdem estado, String observacoes) {
+                                     String observacoes) {
 
         OrdemProducao ordem = getById(id);
 
@@ -114,7 +114,6 @@ public class OrdemProducaoService {
 
         if (dataInicio != null) ordem.setDataInicio(dataInicio);
         if (dataFim != null) ordem.setDataFim(dataFim);
-        if (estado != null) ordem.setEstado(estado);
         if (observacoes != null) ordem.setObservacoes(observacoes);
 
         return ordemRepository.save(ordem);
@@ -122,14 +121,24 @@ public class OrdemProducaoService {
 
 
     @Transactional
-    public OrdemProducao cancelarOrdem(UUID id) {
+    public OrdemProducao cancelarOrdem(UUID id, UUID userId) {
 
         OrdemProducao ordem = getById(id);
 
         validator.validarCancelamento(ordem);
 
-        ordem.setEstado(EstadoOrdem.CANCELADA);
+        // reverte os consumos de matérias primas
+        for (ConsumoProducao consumo : ordem.getConsumos()) {
+            movimentoStockMPService.registarMovimento(
+                    userId,
+                    consumo.getMateria().getId(),
+                    TipoMovimentoMP.ENTRADA,
+                    consumo.getQuantidadeKg(),
+                    "Reversão por cancelamento da ordem " + ordem.getId()
+            );
+        }
 
+        ordem.setEstado(EstadoOrdem.CANCELADA);
         return ordemRepository.save(ordem);
     }
 }

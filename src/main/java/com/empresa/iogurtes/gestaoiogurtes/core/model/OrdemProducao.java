@@ -16,7 +16,7 @@ public class OrdemProducao {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
-    private EstadoOrdem estado = EstadoOrdem.RASCUNHO;
+    private EstadoOrdem estado = EstadoOrdem.EM_PRODUCAO;
 
     @Column(name = "data_inicio")
     private LocalDateTime dataInicio;
@@ -49,11 +49,10 @@ public class OrdemProducao {
     public OrdemProducao() {}
 
     public OrdemProducao(User user, LocalDateTime dataInicio, LocalDateTime dataFim,
-                         EstadoOrdem estado, String observacoes) {
+                         String observacoes) {
         this.user = user;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
-        this.estado = estado;
         this.observacoes = observacoes;
         this.aprovadoEm = null;
     }

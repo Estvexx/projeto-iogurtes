@@ -1,7 +1,6 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoCertificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
@@ -130,7 +129,7 @@ public class GestaoIogurtesApplication {
 			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
 
 			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 12, 5), LocalDateTime.of(2026, 3, 21, 12, 6), EstadoOrdem.RASCUNHO, "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 12, 5), LocalDateTime.of(2026, 3, 21, 12, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
 							new OrdemProducaoProduto(null, ProdutoFinalId2, new BigDecimal("50.000"))
@@ -138,7 +137,7 @@ public class GestaoIogurtesApplication {
 			);
 
 			OrdemProducao ordem2 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 12, 5),LocalDateTime.of(2026, 3, 21, 12, 6), EstadoOrdem.RASCUNHO, "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 12, 5),LocalDateTime.of(2026, 3, 21, 12, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000"))
 					)

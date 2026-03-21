@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.UUID;
 
 
+
 @Component
 public class OrdemProducaoValidator {
 
     public void validarCreate(UUID userId, LocalDateTime dataInicio, LocalDateTime dataFim,
-                              EstadoOrdem estado, String observacoes,
-                              List<OrdemProducaoProduto> produtos) {
+                              String observacoes, List<OrdemProducaoProduto> produtos) {
 
         if (userId == null)
             throw new IllegalArgumentException("Utilizador é obrigatório");
@@ -27,11 +27,14 @@ public class OrdemProducaoValidator {
         if (dataFim == null)
             throw new IllegalArgumentException("Data de fim é obrigatória");
 
+        if (dataInicio.isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException("Data de início não pode ser no passado");
+
         if (dataFim.isBefore(dataInicio))
             throw new IllegalArgumentException("Data de fim não pode ser anterior à data de início");
 
-        if (estado == null)
-            throw new IllegalArgumentException("Estado é obrigatório");
+        if (dataFim.isEqual(dataInicio))
+            throw new IllegalArgumentException("Data de fim não pode ser igual à data de início");
 
         if (observacoes != null && observacoes.isBlank())
             throw new IllegalArgumentException("Observações não podem ser vazias se fornecidas");
@@ -53,14 +56,21 @@ public class OrdemProducaoValidator {
     public void validarUpdate(OrdemProducao ordem, LocalDateTime dataInicio,
                               LocalDateTime dataFim, String observacoes) {
 
-        if (ordem.getEstado() != EstadoOrdem.RASCUNHO)
-            throw new IllegalStateException("Só é possível editar ordens em estado rascunho");
+        if (ordem.getEstado() == EstadoOrdem.CANCELADA)
+            throw new IllegalStateException("Não é possível editar uma ordem cancelada");
+
+        if (ordem.getEstado() == EstadoOrdem.CONCLUIDA)
+            throw new IllegalStateException("Não é possível editar uma ordem já concluída");
+
+        // só podes editar se a dataFim atual ainda não passou
+        if (ordem.getDataFim().isBefore(LocalDateTime.now()))
+            throw new IllegalStateException("Não é possível editar uma ordem cuja data de fim já passou");
 
         LocalDateTime inicio = dataInicio != null ? dataInicio : ordem.getDataInicio();
         LocalDateTime fim = dataFim != null ? dataFim : ordem.getDataFim();
 
-        if (inicio != null && fim != null && fim.isBefore(inicio))
-            throw new IllegalArgumentException("Data de fim não pode ser anterior à data de início");
+        if (fim.isBefore(inicio) || fim.isEqual(inicio))
+            throw new IllegalArgumentException("Data de fim deve ser posterior à data de início");
 
         if (observacoes != null && observacoes.isBlank())
             throw new IllegalArgumentException("Observações não podem ser vazias se fornecidas");
@@ -70,7 +80,6 @@ public class OrdemProducaoValidator {
     }
 
     public void validarCancelamento(OrdemProducao ordem) {
-
         if (ordem.getEstado() == EstadoOrdem.CONCLUIDA)
             throw new IllegalStateException("Não é possível cancelar uma ordem já concluída");
 
