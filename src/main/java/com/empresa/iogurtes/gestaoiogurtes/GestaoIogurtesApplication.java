@@ -33,7 +33,8 @@ public class GestaoIogurtesApplication {
 								 MovimentoStockMPService movimentoStockMPService,
 								 ProdutoFinalService produtoFinalService,
 								 OrdemProducaoService ordemProducaoService,
-								 PalletTipoService palletTipoService) {
+								 PalletTipoService palletTipoService,
+								 EncomendaService encomendaService) {
 		return args -> {
 			// Secçao de Empresa
 			Empresa e1 = empresaService.createEmpresa("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão");
@@ -62,7 +63,7 @@ public class GestaoIogurtesApplication {
 			UUID userId2 = user2 != null ? user2.getId() : null;
 			UUID userId3 = user3 != null ? user3.getId() : null;
 			UUID userId4 = user4 != null ? user4.getId() : null;
-
+			UUID userId5 = user5 != null ? user5.getId() : null;
 			User user1Att = userService.updateUser(userId1, "Maria Costinha", "NOITE", List.of("ADMIN", "FUNCIONARIO"));
 
 			// Secçao de Fornecedores
@@ -148,6 +149,17 @@ public class GestaoIogurtesApplication {
 			PalletTipo pallet2 = palletTipoService.create("Industrial Pallet", new BigDecimal("800.000"));
 			PalletTipo pallet3 = palletTipoService.create("Half Pallet", new BigDecimal("600.000"));
 
+			UUID palletId1 = pallet1 != null ? pallet1.getId() : null;
+			UUID palletId2 = pallet2 != null ? pallet2.getId() : null;
+			UUID palletId3 = pallet3 != null ? pallet3.getId() : null;
+
+			Encomenda encomenda1 = encomendaService.createEncomenda(
+					userId5,
+					List.of(
+							new EncomendaPallet(ProdutoFinalId1, palletId3, 2, new BigDecimal("150.00")),
+							new EncomendaPallet(ProdutoFinalId2, palletId3, 1, new BigDecimal("200.00"))
+					)
+			);
 
 			// ============================================
 			// LISTAGENS FINAIS
