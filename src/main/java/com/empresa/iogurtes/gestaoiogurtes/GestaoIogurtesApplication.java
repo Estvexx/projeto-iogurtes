@@ -32,7 +32,8 @@ public class GestaoIogurtesApplication {
 								 MateriaPrimaService materiaPrimaService,
 								 MovimentoStockMPService movimentoStockMPService,
 								 ProdutoFinalService produtoFinalService,
-								 OrdemProducaoService ordemProducaoService) {
+								 OrdemProducaoService ordemProducaoService,
+								 PalletTipoService palletTipoService) {
 		return args -> {
 			// Secçao de Empresa
 			Empresa e1 = empresaService.createEmpresa("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão");
@@ -129,7 +130,7 @@ public class GestaoIogurtesApplication {
 			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
 
 			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 12, 5), LocalDateTime.of(2026, 3, 21, 12, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 16, 5), LocalDateTime.of(2026, 3, 21, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
 							new OrdemProducaoProduto(null, ProdutoFinalId2, new BigDecimal("50.000"))
@@ -137,11 +138,15 @@ public class GestaoIogurtesApplication {
 			);
 
 			OrdemProducao ordem2 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 12, 5),LocalDateTime.of(2026, 3, 21, 12, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 16, 5),LocalDateTime.of(2026, 3, 21, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000"))
 					)
 			);
+
+			PalletTipo pallet1 = palletTipoService.create("EUR Pallet (Standard)", new BigDecimal("1200.000"));
+			PalletTipo pallet2 = palletTipoService.create("Industrial Pallet", new BigDecimal("800.000"));
+			PalletTipo pallet3 = palletTipoService.create("Half Pallet", new BigDecimal("600.000"));
 
 
 			// ============================================
