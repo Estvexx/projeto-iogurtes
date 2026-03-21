@@ -2,8 +2,10 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.OrdemProducaoRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.OrdemProducaoValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,17 +23,20 @@ public class OrdemProducaoService {
     private final ProdutoFinalRepository produtoFinalRepository;
     private final UserRepository userRepository;
     private final MovimentoStockPFService movimentoStockPFService;
+    private final MovimentoStockMPService movimentoStockMPService;
     private final OrdemProducaoValidator validator;
 
     public OrdemProducaoService(OrdemProducaoRepository ordemRepository,
                                 ProdutoFinalRepository produtoFinalRepository,
                                 UserRepository userRepository,
                                 MovimentoStockPFService movimentoStockPFService,
-                                OrdemProducaoValidator validator) {
+                                OrdemProducaoValidator validator,
+                                MovimentoStockMPService movimentoStockMPService) {
         this.ordemRepository = ordemRepository;
         this.produtoFinalRepository = produtoFinalRepository;
         this.userRepository = userRepository;
         this.movimentoStockPFService = movimentoStockPFService;
+        this.movimentoStockMPService = movimentoStockMPService;
         this.validator = validator;
     }
 
@@ -47,17 +52,18 @@ public class OrdemProducaoService {
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
         OrdemProducao ordem = new OrdemProducao(user, dataInicio, dataFim, estado, observacoes);
+        OrdemProducao savedOrdem = ordemRepository.save(ordem);
 
         List<ConsumoProducao> todosConsumos = new ArrayList<>();
+        List<OrdemProducaoProduto> produtosMutaveis = new ArrayList<>(produtos);
 
-        for (OrdemProducaoProduto opp : produtos) {
-            opp.setOrdem(ordem); // passa o id da ordem para a tabela
+        for (OrdemProducaoProduto opp : produtosMutaveis) {
+            opp.setOrdem(savedOrdem);
 
             ProdutoFinal produto = produtoFinalRepository.findById(opp.getProduto().getId())
                     .orElseThrow(() -> new IllegalArgumentException(
                             "Produto não encontrado: " + opp.getProduto().getId()));
 
-            // calcula consumos de matérias primas
             produto.getMaterias().forEach(pm -> {
                 BigDecimal consumoTotal = pm.getQuantidadePorUnidadeProduto()
                         .multiply(opp.getQuantidadeKg());
@@ -69,22 +75,20 @@ public class OrdemProducaoService {
                         .findFirst()
                         .ifPresentOrElse(
                                 existente -> existente.setQuantidadeKg(existente.getQuantidadeKg().add(consumoTotal)),
-                                () -> todosConsumos.add(new ConsumoProducao(ordem, pm.getMateria(), consumoTotal))
+                                () -> todosConsumos.add(new ConsumoProducao(savedOrdem, pm.getMateria(), consumoTotal))
                         );
-            });
 
-            // MovimentoStockPFService atualiza o stock_atual no ProdutoFinal
-            movimentoStockPFService.registarMovimento(
-                    produto, ordem, TipoMovimentoPF.PRODUCAO,
-                    opp.getQuantidadeKg().intValue(),
-                    "Produção via ordem " + ordem.getId()
-            );
+                movimentoStockMPService.registarMovimento(
+                        userId, materiaId, TipoMovimentoMP.SAIDA, consumoTotal,
+                        "Consumo para produção via ordem " + savedOrdem.getId()
+                );
+            });
         }
 
-        ordem.setProdutos(produtos);
-        ordem.setConsumos(todosConsumos);
+        savedOrdem.setProdutos(produtosMutaveis);
+        savedOrdem.setConsumos(todosConsumos);
 
-        return ordemRepository.save(ordem);
+        return ordemRepository.save(savedOrdem);
     }
 
 

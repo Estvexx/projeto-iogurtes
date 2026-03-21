@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@EnableScheduling
 @SpringBootApplication
 public class GestaoIogurtesApplication {
 
@@ -100,9 +102,9 @@ public class GestaoIogurtesApplication {
 			MovimentoStockMP m10 = movimentoStockMPService.registarMovimento(userId3, mpCacau.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial cacau");
 
 			// Saídas
-			MovimentoStockMP m11 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("100.000"), "Saída para produção");
-			MovimentoStockMP m12 = movimentoStockMPService.registarMovimento(userId4, mpAcucar.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("20.000"), "Saída para produção");
-			MovimentoStockMP m13 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("5.000"), "Saída para produção");
+			//MovimentoStockMP m11 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("100.000"), "Saída para produção");
+			//MovimentoStockMP m12 = movimentoStockMPService.registarMovimento(userId4, mpAcucar.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("20.000"), "Saída para produção");
+			//MovimentoStockMP m13 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("5.000"), "Saída para produção");
 
 			// Produtos Finais
 			ProdutoFinal pNatural = produtoFinalService.createProduto(
@@ -128,7 +130,7 @@ public class GestaoIogurtesApplication {
 			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
 
 			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 5, 10, 8, 0), LocalDateTime.of(2026, 5, 10, 8, 30), EstadoOrdem.RASCUNHO, "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 12, 5), LocalDateTime.of(2026, 3, 21, 12, 6), EstadoOrdem.RASCUNHO, "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
 							new OrdemProducaoProduto(null, ProdutoFinalId2, new BigDecimal("50.000"))
@@ -136,7 +138,7 @@ public class GestaoIogurtesApplication {
 			);
 
 			OrdemProducao ordem2 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 5, 10, 9, 0), LocalDateTime.of(2026, 5, 10, 9, 30), EstadoOrdem.RASCUNHO, "observação",
+					userId1, LocalDateTime.of(2026, 3, 21, 12, 5),LocalDateTime.of(2026, 3, 21, 12, 6), EstadoOrdem.RASCUNHO, "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000"))
 					)
