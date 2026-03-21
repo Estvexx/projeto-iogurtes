@@ -141,4 +141,46 @@ public class OrdemProducaoService {
         ordem.setEstado(EstadoOrdem.CANCELADA);
         return ordemRepository.save(ordem);
     }
+
+    @Transactional
+    public OrdemProducao aprovarOrdem(UUID ordemId) {
+        OrdemProducao ordem = getById(ordemId);
+
+        if (ordem.getEstado() != EstadoOrdem.AGUARDA_APROVACAO)
+            throw new IllegalStateException("Ordem não está em estado de aprovação");
+
+        List<ConsumoProducao> todosConsumos = new ArrayList<>();
+
+        for (OrdemProducaoProduto opp : ordem.getProdutos()) {
+            ProdutoFinal produto = produtoFinalRepository.findById(opp.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Produto não encontrado: " + opp.getProduto().getId()));
+
+            produto.getMaterias().forEach(pm -> {
+                BigDecimal consumoTotal = pm.getQuantidadePorUnidadeProduto()
+                        .multiply(opp.getQuantidadeKg());
+
+                UUID materiaId = pm.getMateria().getId();
+
+                todosConsumos.stream()
+                        .filter(c -> c.getMateria().getId().equals(materiaId))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                existente -> existente.setQuantidadeKg(existente.getQuantidadeKg().add(consumoTotal)),
+                                () -> todosConsumos.add(new ConsumoProducao(ordem, pm.getMateria(), consumoTotal))
+                        );
+
+                movimentoStockMPService.registarMovimento(
+                        ordem.getUser().getId(), materiaId, TipoMovimentoMP.SAIDA, consumoTotal,
+                        "Consumo para produção via ordem " + ordem.getId()
+                );
+            });
+        }
+
+        ordem.setConsumos(todosConsumos);
+        ordem.setEstado(EstadoOrdem.EM_PRODUCAO);
+        ordem.setAprovadoEm(LocalDateTime.now());
+
+        return ordemRepository.save(ordem);
+    }
 }

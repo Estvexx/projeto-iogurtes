@@ -54,6 +54,14 @@ public class EncomendaPallet {
         this.quantidadePallets = quantidadePallets;
         this.precoPorPallet = precoPorPallet;
     }
+    public EncomendaPallet(UUID produtoId, UUID palletTipoId, Integer quantidadePallets, BigDecimal precoPorPallet) {
+        this.produto = new ProdutoFinal();
+        this.produto.setId(produtoId);
+        this.palletTipo = new PalletTipo();
+        this.palletTipo.setId(palletTipoId);
+        this.quantidadePallets = quantidadePallets;
+        this.precoPorPallet = precoPorPallet;
+    }
 
     @PrePersist
     private void onCreate() {
