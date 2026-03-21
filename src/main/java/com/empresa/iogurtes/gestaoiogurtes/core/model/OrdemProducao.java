@@ -2,7 +2,6 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -15,16 +14,9 @@ public class OrdemProducao {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "produto_id", nullable = false)
-    private ProdutoFinal produto;
-
-    @Column(name = "quantidade_kg", precision = 12, scale = 3)
-    private BigDecimal quantidadeKg;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
-    private EstadoOrdem estado = EstadoOrdem.rascunho;
+    private EstadoOrdem estado = EstadoOrdem.RASCUNHO;
 
     @Column(name = "data_inicio")
     private LocalDateTime dataInicio;
@@ -49,17 +41,21 @@ public class OrdemProducao {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "ordem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrdemProducaoProduto> produtos;
+
+    @OneToMany(mappedBy = "ordem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ConsumoProducao> consumos;
 
     public OrdemProducao() {}
 
-    public OrdemProducao(ProdutoFinal produto, BigDecimal quantidadeKg,
-                         User user, String observacoes) {
-        this.produto = produto;
-        this.quantidadeKg = quantidadeKg;
+    public OrdemProducao(User user, LocalDateTime dataInicio, LocalDateTime dataFim,
+                         EstadoOrdem estado, String observacoes) {
         this.user = user;
+        this.dataInicio = dataInicio;
+        this.dataFim = dataFim;
+        this.estado = estado;
         this.observacoes = observacoes;
-        this.estado = EstadoOrdem.rascunho;
+        this.aprovadoEm = null;
     }
 
     @PrePersist
@@ -74,8 +70,6 @@ public class OrdemProducao {
     }
 
     public UUID getId() { return id; }
-    public ProdutoFinal getProduto() { return produto; }
-    public BigDecimal getQuantidadeKg() { return quantidadeKg; }
     public EstadoOrdem getEstado() { return estado; }
     public LocalDateTime getDataInicio() { return dataInicio; }
     public LocalDateTime getDataFim() { return dataFim; }
@@ -84,11 +78,10 @@ public class OrdemProducao {
     public String getObservacoes() { return observacoes; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public List<OrdemProducaoProduto> getProdutos() { return produtos; }
     public List<ConsumoProducao> getConsumos() { return consumos; }
 
     public void setId(UUID id) { this.id = id; }
-    public void setProduto(ProdutoFinal produto) { this.produto = produto; }
-    public void setQuantidadeKg(BigDecimal quantidadeKg) { this.quantidadeKg = quantidadeKg; }
     public void setEstado(EstadoOrdem estado) { this.estado = estado; }
     public void setDataInicio(LocalDateTime dataInicio) { this.dataInicio = dataInicio; }
     public void setDataFim(LocalDateTime dataFim) { this.dataFim = dataFim; }
@@ -97,15 +90,16 @@ public class OrdemProducao {
     public void setObservacoes(String observacoes) { this.observacoes = observacoes; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setProdutos(List<OrdemProducaoProduto> produtos) { this.produtos = produtos; }
     public void setConsumos(List<ConsumoProducao> consumos) { this.consumos = consumos; }
 
     @Override
     public String toString() {
         return "OrdemProducao{" +
                 "id=" + id +
-                ", produto=" + produto.getNome() +
                 ", estado=" + estado +
-                ", quantidadeKg=" + quantidadeKg +
+                ", dataInicio=" + dataInicio +
+                ", dataFim=" + dataFim +
                 '}';
     }
 }

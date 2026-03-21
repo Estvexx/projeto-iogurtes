@@ -1,11 +1,9 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoFinal;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoMateria;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.ProdutoFinalValidator;
 import org.springframework.stereotype.Service;
