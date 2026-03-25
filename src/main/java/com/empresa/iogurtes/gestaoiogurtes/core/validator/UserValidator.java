@@ -47,6 +47,7 @@ public class UserValidator {
 
     }
 
+
     private void validarNome(String nome) {
         if (nome == null || nome.length() < 4 || nome.length() > 60) {
             throw new IllegalArgumentException("Nome deve ter entre 4 e 60 caracteres");
@@ -67,6 +68,10 @@ public class UserValidator {
         if (!hasLower) throw new IllegalArgumentException("A password deve ter pelo menos uma letra minúscula");
         if (!hasDigit) throw new IllegalArgumentException("A password deve ter pelo menos um número");
         if (!hasSymbol) throw new IllegalArgumentException("A password deve ter pelo menos um símbolo especial");
+    }
+
+    public void validatePasswordForChange(String password) {
+        validarPassword(password);
     }
 
     private void validarRoles(List<UserRole> roles) {

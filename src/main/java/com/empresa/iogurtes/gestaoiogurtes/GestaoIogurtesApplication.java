@@ -34,7 +34,8 @@ public class GestaoIogurtesApplication {
 								 ProdutoFinalService produtoFinalService,
 								 OrdemProducaoService ordemProducaoService,
 								 PalletTipoService palletTipoService,
-								 EncomendaService encomendaService) {
+								 EncomendaService encomendaService,
+								 LoginService loginService) {
 		return args -> {
 			// Secçao de Empresa
 			Empresa e1 = empresaService.createEmpresa("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão");
@@ -65,6 +66,20 @@ public class GestaoIogurtesApplication {
 			UUID userId4 = user4 != null ? user4.getId() : null;
 			UUID userId5 = user5 != null ? user5.getId() : null;
 			User user1Att = userService.updateUser(userId1, "Maria Costinha", "NOITE", List.of("ADMIN", "FUNCIONARIO"));
+
+			try {
+				User authUser = loginService.execute("maria.costa@empresa.com", "MariaCosta@123");
+				System.out.println("Login OK: " + authUser.getEmail());
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Login falhou (nao esperado): " + ex.getMessage());
+			}
+
+			try {
+				loginService.execute("maria.costa@empresa.com", "PasswordErrada");
+				System.out.println("Login com password errada passou (nao esperado)");
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Login com password errada bloqueado: " + ex.getMessage());
+			}
 
 			// Secçao de Fornecedores
 			Fornecedor forn1 = fornecedorService.createFornecedor("Agrilac S.A.", "501234567", "agrilac@fornecedor.com", "+351910000001", "Rua dos Laticínios, 10, Porto", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 12, 31))));
@@ -131,7 +146,7 @@ public class GestaoIogurtesApplication {
 			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
 
 			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 25, 16, 5), LocalDateTime.of(2026, 3, 25, 16, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 26, 16, 5), LocalDateTime.of(2026, 3, 26, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
 							new OrdemProducaoProduto(null, ProdutoFinalId2, new BigDecimal("50.000"))
@@ -139,7 +154,7 @@ public class GestaoIogurtesApplication {
 			);
 
 			OrdemProducao ordem2 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 25, 16, 5),LocalDateTime.of(2026, 3, 25, 16, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 26, 16, 5),LocalDateTime.of(2026, 3, 26, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000"))
 					)
@@ -168,10 +183,30 @@ public class GestaoIogurtesApplication {
 			ordemProducaoService.delete(ordem2.getId());
 			produtoFinalService.delete(pChocolate.getId());
 			materiaPrimaService.delete(mpBaunilha.getId());
-			palletTipoService.delete(pallet2.getId());
-			fornecedorService.delete(forn3.getId());
+			if (palletId2 != null) {
+				palletTipoService.delete(palletId2);
+			}
+			if (fornId3 != null) {
+				fornecedorService.delete(fornId3);
+			}
 			userService.delete(userId4);
 			empresaService.delete(empresaId3);
+
+			try {
+				loginService.execute("bruno.lima@empresa.com", "BrunoLima@2024");
+				System.out.println("Login de user inativo passou (nao esperado)");
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Login de user inativo bloqueado: " + ex.getMessage());
+			}
+
+			userService.changePassword(userId1, "MariaNova@123!");
+
+			try {
+				loginService.execute("maria.costa@empresa.com", "MariaNova@123!");;
+				System.out.println("Login de maria com nova passe com sucesso");
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Login de user inativo bloqueado: " + ex.getMessage());
+			}
 
 			// ============================================
 			// LISTAGENS FINAIS
