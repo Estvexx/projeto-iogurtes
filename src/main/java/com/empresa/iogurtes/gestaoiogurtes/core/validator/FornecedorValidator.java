@@ -2,6 +2,7 @@ package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.FornecedorCertificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.utils.PhoneUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -17,21 +18,19 @@ public class FornecedorValidator {
     }
 
     public void validateCreateFornecedor(String nome, String nif, String email,
-                                         String telefone, String morada, List<FornecedorCertificacao> certificacoes) {
+                                         String morada, List<FornecedorCertificacao> certificacoes) {
         validarNome(nome);
         validarNif(nif);
         validarEmail(email);
-        validarTelefone(telefone);
         validarMorada(morada);
         validarCertificacoes(certificacoes);
     }
 
     public void validateUpdateFornecedor(String nome, String nif, String email,
-                                         String telefone, String morada) {
+                                          String morada) {
         validarNome(nome);
         validarNif(nif);
         validarEmail(email);
-        validarTelefone(telefone);
         validarMorada(morada);
     }
 
@@ -56,10 +55,8 @@ public class FornecedorValidator {
         }
     }
 
-    private void validarTelefone(String telefone) {
-        if (telefone != null && telefone.length() > 20) {
-            throw new IllegalArgumentException("Telefone não pode ter mais de 20 caracteres");
-        }
+    public String validarTelefone(String telefone) {
+        return PhoneUtils.validarENormalizar(telefone);
     }
 
     private void validarMorada(String morada) {
