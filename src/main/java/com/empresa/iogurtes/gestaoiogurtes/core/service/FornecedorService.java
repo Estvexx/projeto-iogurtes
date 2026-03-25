@@ -33,9 +33,10 @@ public class FornecedorService {
     public Fornecedor createFornecedor(String nome, String nif, String email,
                                        String telefone, String morada, List<FornecedorCertificacao> certificacoes) {
 
-        fornecedorValidator.validateCreateFornecedor(nome, nif, email, telefone, morada,  certificacoes);
+        fornecedorValidator.validateCreateFornecedor(nome, nif, email, morada,  certificacoes);
+        String telefoneNormalizado = fornecedorValidator.validarTelefone(telefone);
 
-        Fornecedor fornecedor = new Fornecedor(nome, nif, email, telefone, morada);
+        Fornecedor fornecedor = new Fornecedor(nome, nif, email, telefoneNormalizado, morada);
 
         for (FornecedorCertificacao certificacao : certificacoes) {
             certificacao.setFornecedor(fornecedor);
@@ -52,12 +53,13 @@ public class FornecedorService {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado"));
 
-        fornecedorValidator.validateUpdateFornecedor(nome, nif, email, telefone, morada);
+        fornecedorValidator.validateUpdateFornecedor(nome, nif, email, morada);
+        String telefoneNormalizado = fornecedorValidator.validarTelefone(telefone);
 
         fornecedor.setNome(nome);
         fornecedor.setNif(nif);
         fornecedor.setEmail(email);
-        fornecedor.setTelefone(telefone);
+        fornecedor.setTelefone(telefoneNormalizado);
         fornecedor.setMorada(morada);
 
         return fornecedorRepository.save(fornecedor);

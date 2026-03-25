@@ -32,9 +32,10 @@ public class EmpresaService {
     public Empresa createEmpresa(String nomeEmpresa, String nipc, String telefone,
                                 String morada, String codigoPostal, String cidade) {
 
-        empresaValidator.validateCreateEmpresa(nomeEmpresa, nipc,telefone, morada, codigoPostal, cidade);
+        empresaValidator.validateCreateEmpresa(nomeEmpresa, nipc, morada, codigoPostal, cidade);
+        String telefoneNormalizado = empresaValidator.validarTelefone(telefone);
 
-        Empresa empresa = new Empresa(nomeEmpresa, nipc, telefone, morada, codigoPostal, cidade);
+        Empresa empresa = new Empresa(nomeEmpresa, nipc, telefoneNormalizado, morada, codigoPostal, cidade);
         return empresaRepository.save(empresa);
     }
 
@@ -55,12 +56,13 @@ public class EmpresaService {
     public Empresa update(UUID id, String nomeEmpresa, String nipc, String telefone,
                           String morada, String codigoPostal, String cidade) {
 
-        empresaValidator.validateUpdateEmpresa(id, nomeEmpresa, nipc,telefone, morada, codigoPostal, cidade);
+        empresaValidator.validateUpdateEmpresa(id, nomeEmpresa, nipc, morada, codigoPostal, cidade);
+        String telefoneNormalizado = empresaValidator.validarTelefone(telefone);
 
         Empresa empresa = getById(id);
         empresa.setNomeEmpresa(nomeEmpresa);
         empresa.setNipc(nipc);
-        empresa.setTelefone(telefone);
+        empresa.setTelefone(telefoneNormalizado);
         empresa.setMorada(morada);
         empresa.setCodigoPostal(codigoPostal);
         empresa.setCidade(cidade);

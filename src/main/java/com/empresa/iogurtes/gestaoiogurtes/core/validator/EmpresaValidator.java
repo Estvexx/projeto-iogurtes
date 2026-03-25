@@ -1,6 +1,7 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.utils.PhoneUtils;
 import org.springframework.stereotype.Component;
 import java.util.UUID;
 
@@ -15,14 +16,12 @@ public class EmpresaValidator {
 
     public void validateCreateEmpresa(String nomeEmpresa,
                                       String nipc,
-                                      String telefone,
                                       String morada,
                                       String codigoPostal,
                                       String cidade) {
 
         validarNomeEmpresa(nomeEmpresa);
         validarNipc(nipc);
-        validarTelefone(telefone);
         validarMorada(morada);
         validarCodigoPostal(codigoPostal);
         validarCidade(cidade);
@@ -31,14 +30,12 @@ public class EmpresaValidator {
     public void validateUpdateEmpresa(UUID id,
                                       String nomeEmpresa,
                                       String nipc,
-                                      String telefone,
                                       String morada,
                                       String codigoPostal,
                                       String cidade) {
 
         validarNomeEmpresa(nomeEmpresa);
         validarNipcUpdate(id, nipc);
-        validarTelefone(telefone);
         validarMorada(morada);
         validarCodigoPostal(codigoPostal);
         validarCidade(cidade);
@@ -66,13 +63,8 @@ public class EmpresaValidator {
         }
     }
 
-    private void validarTelefone(String telefone) {
-        if (telefone == null || telefone.isBlank()) {
-            return;
-        }
-        if (!telefone.matches("^\\+351\\d{9}$")) {
-            throw new IllegalArgumentException("Telefone inválido. Formato: +351912345678");
-        }
+    public String validarTelefone(String telefone) {
+        return PhoneUtils.validarENormalizar(telefone);
     }
 
     private void validarMorada(String morada) {

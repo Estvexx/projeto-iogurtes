@@ -44,6 +44,32 @@ public class GestaoIogurtesApplication {
 			Empresa e4 = empresaService.createEmpresa("Açúcares & Mel Portugal", "507654321", "+351243987654", "Estrada Nacional 3, Km 145", "2000-123", "Santarém");
 			Empresa e5 = empresaService.createEmpresa("Cacau & Especiarias Gourmet", "506543210", "+351213456789", "Avenida da República, 88, Piso 3", "1050-012", "Lisboa");
 
+			// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
+			Empresa eTel1 = empresaService.createEmpresa("Empresa Telefone 1", "505111111", "912345678", "Rua A", "1000-001", "Lisboa");
+			Empresa eTel2 = empresaService.createEmpresa("Empresa Telefone 2", "504222222", "+351 913 222 333", "Rua B", "1000-002", "Porto");
+			Empresa eTel3 = empresaService.createEmpresa("Empresa Telefone 3", "503333333", "(351) 914444555", "Rua C", "1000-003", "Braga");
+			System.out.println("Telefones normalizados (empresas): " + eTel1.getTelefone() + " | " + eTel2.getTelefone() + " | " + eTel3.getTelefone());
+
+			// Testes de telefones estrangeiros
+			Empresa eExt1 = empresaService.createEmpresa("Empresa Telefone Espanha", "501010101", "+34 612 345 678", "Calle A", "1000-005", "Madrid");
+			Empresa eExt2 = empresaService.createEmpresa("Empresa Telefone França", "501010102", "+33 6 12 34 56 78", "Rue B", "1000-006", "Paris");
+			Empresa eExt3 = empresaService.createEmpresa("Empresa Telefone EUA", "501010103", "+1 202 555 0147", "Street C", "1000-007", "Washington");
+			System.out.println("Telefones estrangeiros normalizados: " + eExt1.getTelefone() + " | " + eExt2.getTelefone() + " | " + eExt3.getTelefone());
+
+			try {
+				empresaService.createEmpresa("Empresa Telefone Estrangeiro Inválido", "501010104", "+99 123", "Rua E", "1000-008", "Roma");
+				System.out.println("Telefone estrangeiro inválido passou (nao esperado)");
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Telefone estrangeiro inválido bloqueado com sucesso: " + ex.getMessage());
+			}
+
+			try {
+				empresaService.createEmpresa("Empresa Telefone Inválido", "502444444", "123", "Rua D", "1000-004", "Coimbra");
+				System.out.println("Telefone inválido passou (nao esperado)");
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Telefone inválido bloqueado com sucesso: " + ex.getMessage());
+			}
+
 			UUID empresaId1 = e1 != null ? e1.getId() : null;
 			UUID empresaId2 = e2 != null ? e2.getId() : null;
 			UUID empresaId3 = e3 != null ? e3.getId() : null;
@@ -87,6 +113,9 @@ public class GestaoIogurtesApplication {
 			Fornecedor forn3 = fornecedorService.createFornecedor("FrutasNorte", "508765432", "geral@frutasnorte.pt", "+351910000003", "Zona Agrícola Norte, Lote 4, Viseu", List.of(new FornecedorCertificacao(TipoCertificacao.BIO, "Bio Portugal", LocalDate.of(2026, 5, 10)), new FornecedorCertificacao(TipoCertificacao.HACCP, "HACCP Frutas", LocalDate.of(2026, 8, 15))));
 			Fornecedor forn4 = fornecedorService.createFornecedor("Embalagens Silva", "507654321", "vendas@embalagensilva.pt", "+351910000004", "Rua das Indústrias, 88, Aveiro", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 11, 30)), new FornecedorCertificacao(TipoCertificacao.BIO, "Embalagem Reciclável", LocalDate.of(2026, 7, 25))));
 			Fornecedor forn5 = fornecedorService.createFornecedor("Especiarias do Mundo", "506543210", "contacto@especiarias.pt", "+351910000005", "Avenida das Especiarias, 42, Lisboa", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 22000", LocalDate.of(2026, 10, 18)), new FornecedorCertificacao(TipoCertificacao.OUTRA, "Comércio Justo", LocalDate.of(2026, 4, 12)), new FornecedorCertificacao(TipoCertificacao.BIO, "Bio Mundial", LocalDate.of(2026, 6, 8))));
+			Fornecedor fornTel1 = fornecedorService.createFornecedor("Fornecedor Telefone 1", "505777777", "tel1@fornecedor.com", "915666777", "Rua Tel 1", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2027, 1, 10))));
+			Fornecedor fornTel2 = fornecedorService.createFornecedor("Fornecedor Telefone 2", "505888888", "tel2@fornecedor.com", "+351 916 777 888", "Rua Tel 2", List.of(new FornecedorCertificacao(TipoCertificacao.HACCP, "HACCP", LocalDate.of(2027, 2, 10))));
+			System.out.println("Telefones normalizados (fornecedores): " + fornTel1.getTelefone() + " | " + fornTel2.getTelefone());
 
 			UUID fornId1 = forn1 != null ? forn1.getId() : null;
 			UUID fornId2 = forn2 != null ? forn2.getId() : null;
