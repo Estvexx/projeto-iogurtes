@@ -1,18 +1,12 @@
-    package com.empresa.iogurtes.gestaoiogurtes.core.model;
+package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
-    import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
-    import java.time.LocalDateTime;
-    import java.util.UUID;
-
-
-    @Entity
-    @Table(name = "empresas")
-    public class Empresa {
-
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        private UUID id;
+@Entity
+@Table(name = "empresas")
+public class Empresa extends BaseEntity {
 
         @Column(name = "nome_empresa", nullable = false, length = 150)
         private String nomeEmpresa;
@@ -32,13 +26,7 @@
         @Column(name = "cidade", length = 100)
         private String cidade;
 
-        @Column(name = "createdat")
-        private LocalDateTime createdAt;
-
-        @Column(name = "updatedat")
-        private LocalDateTime updatedAt;
-
-        public Empresa() {}
+    public Empresa() {}
 
         public Empresa(String nomeEmpresa, String nipc, String telefone,
                        String morada, String codigoPostal, String cidade) {
@@ -50,26 +38,13 @@
             this.cidade = cidade;
         }
 
-        @PrePersist
-        private void onCreate() {
-            createdAt = LocalDateTime.now();
-            updatedAt = LocalDateTime.now();
-        }
-
-        @PreUpdate
-        private void onUpdate() {
-            updatedAt = LocalDateTime.now();
-        }
-
-        public UUID getId() { return id; }
-        public String getNomeEmpresa() { return nomeEmpresa; }
+    public String getNomeEmpresa() { return nomeEmpresa; }
         public String getNipc() { return nipc; }
         public String getTelefone() { return telefone; }
         public String getMorada() { return morada; }
         public String getCodigoPostal() { return codigoPostal; }
         public String getCidade() { return cidade; }
 
-        public void setId(UUID id) { this.id = id; }
         public void setNomeEmpresa(String nomeEmpresa) { this.nomeEmpresa = nomeEmpresa; }
         public void setNipc(String nipc) { this.nipc = nipc; }
         public void setTelefone(String telefone) { this.telefone = telefone; }
@@ -77,13 +52,13 @@
         public void setCodigoPostal(String codigoPostal) { this.codigoPostal = codigoPostal; }
         public void setCidade(String cidade) { this.cidade = cidade; }
 
-        @Override
-        public String toString() {
-            return "Empresa{" +
-                    "id=" + id +
-                    ", nomeEmpresa='" + nomeEmpresa + '\'' +
-                    ", nipc='" + nipc + '\'' +
-                    ", cidade='" + cidade + '\'' +
-                    '}';
-        }
+    @Override
+    public String toString() {
+        return "Empresa{" +
+                "id=" + getId() +
+                ", nomeEmpresa='" + nomeEmpresa + '\'' +
+                ", nipc='" + nipc + '\'' +
+                ", cidade='" + cidade + '\'' +
+                '}';
     }
+}

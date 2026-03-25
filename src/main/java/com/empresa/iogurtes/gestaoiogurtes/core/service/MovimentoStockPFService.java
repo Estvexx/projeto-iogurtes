@@ -52,10 +52,14 @@ public class MovimentoStockPFService {
     }
 
     public List<MovimentoStockPF> getAll() {
+        return movimentoRepository.findAllByIsActiveTrue();
+    }
+
+    public List<MovimentoStockPF> getAllIncludingInactive() {
         return movimentoRepository.findAll();
     }
 
-    public List<MovimentoStockPF> getByProduto(Integer produtoId) {
+    public List<MovimentoStockPF> getByProduto(UUID produtoId) {
         return movimentoRepository.findByProdutoId(produtoId);
     }
 

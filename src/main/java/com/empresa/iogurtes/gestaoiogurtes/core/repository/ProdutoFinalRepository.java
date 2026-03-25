@@ -10,6 +10,7 @@ import java.util.UUID;
 @Repository
 public interface ProdutoFinalRepository extends JpaRepository<ProdutoFinal, UUID> {
 
+    List<ProdutoFinal> findAllByIsActiveTrue();
     boolean existsByCodigoSku(String codigoSku);
     boolean existsByNome(String nome);
     boolean existsByNomeAndIdNot(String nome, UUID id);

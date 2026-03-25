@@ -3,6 +3,7 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Fornecedor;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.FornecedorCertificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.FornecedorValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +15,17 @@ import java.util.UUID;
 public class FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
+    private final MateriaPrimaService materiaPrimaService;
     private final FornecedorValidator fornecedorValidator;
 
-    public FornecedorService(FornecedorRepository fornecedorRepository, FornecedorValidator fornecedorValidator) {
+    public FornecedorService(FornecedorRepository fornecedorRepository,
+                             MateriaPrimaRepository materiaPrimaRepository,
+                             MateriaPrimaService materiaPrimaService,
+                             FornecedorValidator fornecedorValidator) {
         this.fornecedorRepository = fornecedorRepository;
+        this.materiaPrimaRepository = materiaPrimaRepository;
+        this.materiaPrimaService = materiaPrimaService;
         this.fornecedorValidator = fornecedorValidator;
     }
 
@@ -61,6 +69,10 @@ public class FornecedorService {
     }
 
     public List<Fornecedor> getAll() {
+        return fornecedorRepository.findAllByIsActiveTrue();
+    }
+
+    public List<Fornecedor> getAllIncludingInactive() {
         return fornecedorRepository.findAll();
     }
 
@@ -69,6 +81,12 @@ public class FornecedorService {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Fornecedor não encontrado"));
 
-        fornecedorRepository.delete(fornecedor);
+        materiaPrimaRepository.findByFornecedorId(id)
+                .forEach(mp -> materiaPrimaService.delete(mp.getId()));
+
+        fornecedor.getCertificacoes().forEach(FornecedorCertificacao::softDelete);
+
+        fornecedor.softDelete();
+        fornecedorRepository.save(fornecedor);
     }
 }

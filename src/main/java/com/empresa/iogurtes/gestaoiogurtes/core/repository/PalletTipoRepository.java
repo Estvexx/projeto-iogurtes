@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface PalletTipoRepository extends JpaRepository<PalletTipo, UUID> {
 
+    List<PalletTipo> findAllByIsActiveTrue();
     boolean existsByNome(String nome);
     List<PalletTipo> findByIsActiveTrue();
 }

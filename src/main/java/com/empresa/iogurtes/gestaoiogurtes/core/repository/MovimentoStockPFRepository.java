@@ -8,7 +8,8 @@ import java.util.UUID;
 
 public interface MovimentoStockPFRepository extends JpaRepository<MovimentoStockPF, UUID> {
 
-    List<MovimentoStockPF> findByProdutoId(Integer produtoId);
+    List<MovimentoStockPF> findAllByIsActiveTrue();
+    List<MovimentoStockPF> findByProdutoId(UUID produtoId);
 
     List<MovimentoStockPF> findByOrdemId(UUID ordemId);
 }

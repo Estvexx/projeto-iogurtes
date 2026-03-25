@@ -1,17 +1,11 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "fornecedores")
-public class Fornecedor {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class Fornecedor extends BaseEntity {
 
     @Column(name = "nome", nullable = false, length = 150)
     private String nome;
@@ -28,12 +22,6 @@ public class Fornecedor {
     @Column(name = "morada", length = 200)
     private String morada;
 
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updatedat")
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "fornecedor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FornecedorCertificacao> certificacoes;
 
@@ -48,41 +36,24 @@ public class Fornecedor {
         this.morada = morada;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public UUID getId() { return id; }
     public String getNome() { return nome; }
     public String getNif() { return nif; }
     public String getEmail() { return email; }
     public String getTelefone() { return telefone; }
     public String getMorada() { return morada; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<FornecedorCertificacao> getCertificacoes() { return certificacoes; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome; }
     public void setNif(String nif) { this.nif = nif; }
     public void setEmail(String email) { this.email = email; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
     public void setMorada(String morada) { this.morada = morada; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setCertificacoes(List<FornecedorCertificacao> certificacoes) { this.certificacoes = certificacoes; }
 
     @Override
     public String toString() {
         return "Fornecedor{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", nome='" + nome + '\'' +
                 ", nif='" + nif + '\'' +
                 '}';

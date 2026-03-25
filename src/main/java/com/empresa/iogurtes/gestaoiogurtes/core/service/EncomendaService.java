@@ -12,33 +12,44 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 public class EncomendaService {
 
     private final EncomendaRepository encomendaRepository;
+    private final EncomendaPalletRepository encomendaPalletRepository;
+    private final EncomendaOrdemRepository encomendaOrdemRepository;
     private final ProdutoFinalRepository produtoFinalRepository;
     private final UserRepository userRepository;
     private final PalletTipoRepository palletTipoRepository;
     private final OrdemProducaoRepository ordemProducaoRepository;
+    private final OrdemProducaoService ordemProducaoService;
     private final MovimentoStockPFService movimentoStockPFService;
     private final EncomendaValidator validator;
 
     public EncomendaService(EncomendaRepository encomendaRepository,
+                            EncomendaPalletRepository encomendaPalletRepository,
+                            EncomendaOrdemRepository encomendaOrdemRepository,
                             ProdutoFinalRepository produtoFinalRepository,
                             UserRepository userRepository,
                             PalletTipoRepository palletTipoRepository,
                             OrdemProducaoRepository ordemProducaoRepository,
+                            OrdemProducaoService ordemProducaoService,
                             MovimentoStockPFService movimentoStockPFService,
                             EncomendaValidator validator) {
         this.validator = validator;
         this.encomendaRepository = encomendaRepository;
+        this.encomendaPalletRepository = encomendaPalletRepository;
+        this.encomendaOrdemRepository = encomendaOrdemRepository;
         this.produtoFinalRepository = produtoFinalRepository;
         this.userRepository = userRepository;
         this.palletTipoRepository = palletTipoRepository;
         this.ordemProducaoRepository = ordemProducaoRepository;
+        this.ordemProducaoService = ordemProducaoService;
         this.movimentoStockPFService = movimentoStockPFService;
     }
 
@@ -124,7 +135,36 @@ public class EncomendaService {
 
 
     public List<Encomenda> getAll() {
+        return encomendaRepository.findAllByIsActiveTrue();
+    }
+
+    public List<Encomenda> getAllIncludingInactive() {
         return encomendaRepository.findAll();
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        Encomenda encomenda = getById(id);
+        Set<UUID> ordensParaDesativar = new HashSet<>();
+
+        encomendaPalletRepository.findByEncomendaId(id)
+                .forEach(pallet -> {
+                    encomendaOrdemRepository.findByEncomendaPalletId(pallet.getId())
+                            .forEach(eo -> {
+                                if (eo.getOrdem() != null && eo.getOrdem().getId() != null) {
+                                    ordensParaDesativar.add(eo.getOrdem().getId());
+                                }
+                                eo.softDelete();
+                                encomendaOrdemRepository.save(eo);
+                            });
+                    pallet.softDelete();
+                    encomendaPalletRepository.save(pallet);
+                });
+
+        ordensParaDesativar.forEach(ordemProducaoService::delete);
+
+        encomenda.softDelete();
+        encomendaRepository.save(encomenda);
     }
 
 

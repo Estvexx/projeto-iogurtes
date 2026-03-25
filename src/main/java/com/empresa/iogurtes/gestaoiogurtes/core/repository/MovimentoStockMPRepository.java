@@ -10,6 +10,7 @@ import java.util.UUID;
 @Repository
 public interface MovimentoStockMPRepository extends JpaRepository<MovimentoStockMP, UUID> {
 
+    List<MovimentoStockMP> findAllByIsActiveTrue();
     List<MovimentoStockMP> findByMateriaId(UUID materiaId);
     List<MovimentoStockMP> findByUserId(UUID userId);
 

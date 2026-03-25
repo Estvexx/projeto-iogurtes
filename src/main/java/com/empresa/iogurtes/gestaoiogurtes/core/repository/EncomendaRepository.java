@@ -7,5 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EncomendaRepository extends JpaRepository<Encomenda, UUID> {
+    List<Encomenda> findAllByIsActiveTrue();
     List<Encomenda> findByUserId(UUID userId);
 }

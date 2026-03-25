@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrdemProducaoRepository extends JpaRepository<OrdemProducao, UUID> {
+    List<OrdemProducao> findAllByIsActiveTrue();
+    List<OrdemProducao> findByUserId(UUID userId);
     // notIn é para evitar processar ordens que já estão concluídas ou canceladas
     List<OrdemProducao> findByDataFimBeforeAndEstadoNotIn(LocalDateTime data, List<EstadoOrdem> estados);
 }
