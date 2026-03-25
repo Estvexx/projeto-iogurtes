@@ -2,10 +2,10 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
+import com.empresa.iogurtes.gestaoiogurtes.core.ports.PasswordHasher;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
 import jakarta.transaction.Transactional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,7 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserValidator userValidator;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final EmpresaRepository empresaRepository;
     private final EncomendaRepository encomendaRepository;
     private final EncomendaPalletRepository encomendaPalletRepository;
@@ -28,7 +28,7 @@ public class UserService {
 
     public UserService(UserRepository userRepository,
                        UserValidator userValidator,
-                       BCryptPasswordEncoder passwordEncoder,
+                       PasswordHasher passwordHasher,
                        EmpresaRepository empresaRepository,
                        EncomendaRepository encomendaRepository,
                        EncomendaPalletRepository encomendaPalletRepository,
@@ -37,7 +37,7 @@ public class UserService {
                        MovimentoStockMPRepository movimentoStockMPRepository) {
         this.userRepository = userRepository;
         this.userValidator = userValidator;
-        this.passwordEncoder = passwordEncoder;
+        this.passwordHasher = passwordHasher;
         this.empresaRepository = empresaRepository;
         this.encomendaRepository = encomendaRepository;
         this.encomendaPalletRepository = encomendaPalletRepository;
@@ -61,7 +61,7 @@ public class UserService {
 
         userValidator.validateCreateUser(nome, email,password, turnoTipo, dataAdmissao, userRoles, empresaId);
 
-        String passwordHash = passwordEncoder.encode(password);
+        String passwordHash = passwordHasher.hash(password);
         // o getReferenceById é só para passar como objeto empresa o uuid, assim nao retorno o objeto inteiro, evito queries
         Empresa empresa = empresaId != null ? empresaRepository.getReferenceById(empresaId) : null;
 
@@ -118,6 +118,25 @@ public class UserService {
 
     public List<User> getAllIncludingInactive() {
         return userRepository.findAll();
+    }
+
+    @Transactional
+    public void changePassword(UUID id, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+
+        if (!user.isActive()) {
+            throw new IllegalArgumentException("Utilizador inativo");
+        }
+        
+        userValidator.validatePasswordForChange(newPassword);
+
+        if (passwordHasher.matches(newPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("A nova password deve ser diferente da atual");
+        }
+
+        user.setPasswordHash(passwordHasher.hash(newPassword));
+        userRepository.save(user);
     }
 
     @Transactional
