@@ -131,7 +131,7 @@ public class GestaoIogurtesApplication {
 			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
 
 			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 16, 5), LocalDateTime.of(2026, 3, 21, 16, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 25, 16, 5), LocalDateTime.of(2026, 3, 25, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
 							new OrdemProducaoProduto(null, ProdutoFinalId2, new BigDecimal("50.000"))
@@ -139,7 +139,7 @@ public class GestaoIogurtesApplication {
 			);
 
 			OrdemProducao ordem2 = ordemProducaoService.createOrdem(
-					userId1, LocalDateTime.of(2026, 3, 21, 16, 5),LocalDateTime.of(2026, 3, 21, 16, 6), "observação",
+					userId1, LocalDateTime.of(2026, 3, 25, 16, 5),LocalDateTime.of(2026, 3, 25, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000"))
 					)
@@ -162,8 +162,30 @@ public class GestaoIogurtesApplication {
 			);
 
 			// ============================================
+			// TESTES DE DELETE
+			// ============================================
+			encomendaService.delete(encomenda1.getId());
+			ordemProducaoService.delete(ordem2.getId());
+			produtoFinalService.delete(pChocolate.getId());
+			materiaPrimaService.delete(mpBaunilha.getId());
+			palletTipoService.delete(pallet2.getId());
+			fornecedorService.delete(forn3.getId());
+			userService.delete(userId4);
+			empresaService.delete(empresaId3);
+
+			// ============================================
 			// LISTAGENS FINAIS
 			// ============================================
+			System.out.println("\n========== RESUMO ATIVOS / TOTAL ==========");
+			System.out.println("Empresas: " + empresaService.getAll().size() + " / " + empresaService.getAllIncludingInactive().size());
+			System.out.println("Users: " + userService.getAll().size() + " / " + userService.getAllIncludingInactive().size());
+			System.out.println("Fornecedores: " + fornecedorService.getAll().size() + " / " + fornecedorService.getAllIncludingInactive().size());
+			System.out.println("Matérias-primas: " + materiaPrimaService.getAll().size() + " / " + materiaPrimaService.getAllIncludingInactive().size());
+			System.out.println("Movimentos MP: " + movimentoStockMPService.getAll().size() + " / " + movimentoStockMPService.getAllIncludingInactive().size());
+			System.out.println("Produtos finais: " + produtoFinalService.getAll().size() + " / " + produtoFinalService.getAllIncludingInactive().size());
+			System.out.println("Ordens produção: " + ordemProducaoService.getAll().size() + " / " + ordemProducaoService.getAllIncludingInactive().size());
+			System.out.println("Pallet tipos: " + palletTipoService.getAll().size() + " / " + palletTipoService.getAllIncludingInactive().size());
+			System.out.println("Encomendas: " + encomendaService.getAll().size() + " / " + encomendaService.getAllIncludingInactive().size());
 
 			System.out.println("\n========== LISTAGEM DE EMPRESAS ==========");
 			empresaService.getAll().forEach(System.out::println);

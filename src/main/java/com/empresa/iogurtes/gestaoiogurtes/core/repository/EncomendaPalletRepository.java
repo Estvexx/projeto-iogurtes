@@ -7,5 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EncomendaPalletRepository extends JpaRepository<EncomendaPallet, UUID> {
+    List<EncomendaPallet> findAllByIsActiveTrue();
     List<EncomendaPallet> findByEncomendaId(UUID encomendaId);
+    List<EncomendaPallet> findByProdutoId(UUID produtoId);
+    List<EncomendaPallet> findByPalletTipoId(UUID palletTipoId);
 }

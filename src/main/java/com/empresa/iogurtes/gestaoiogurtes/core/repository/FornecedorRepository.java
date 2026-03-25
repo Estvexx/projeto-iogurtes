@@ -5,10 +5,13 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.Fornecedor;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface FornecedorRepository extends JpaRepository<Fornecedor, UUID> {
+
+    List<Fornecedor> findAllByIsActiveTrue();
 
     boolean existsByEmail(String email);
     boolean existsByNif(String nif);

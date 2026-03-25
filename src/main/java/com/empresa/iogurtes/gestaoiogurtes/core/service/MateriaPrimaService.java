@@ -5,6 +5,8 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockMPRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.MateriaPrimaValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +21,19 @@ public class MateriaPrimaService {
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final MateriaPrimaValidator materiaPrimaValidator;
     private final FornecedorRepository fornecedorRepository;
+    private final ProdutoMateriaRepository produtoMateriaRepository;
+    private final MovimentoStockMPRepository movimentoStockMPRepository;
 
     public MateriaPrimaService(MateriaPrimaRepository materiaPrimaRepository,
                                MateriaPrimaValidator materiaPrimaValidator,
-                               FornecedorRepository fornecedorRepository) {
+                               FornecedorRepository fornecedorRepository,
+                               ProdutoMateriaRepository produtoMateriaRepository,
+                               MovimentoStockMPRepository movimentoStockMPRepository) {
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.materiaPrimaValidator = materiaPrimaValidator;
         this.fornecedorRepository = fornecedorRepository;
+        this.produtoMateriaRepository = produtoMateriaRepository;
+        this.movimentoStockMPRepository = movimentoStockMPRepository;
     }
 
     @Transactional
@@ -71,6 +79,10 @@ public class MateriaPrimaService {
     }
 
     public List<MateriaPrima> getAll() {
+        return materiaPrimaRepository.findAllByIsActiveTrue();
+    }
+
+    public List<MateriaPrima> getAllIncludingInactive() {
         return materiaPrimaRepository.findAll();
     }
 
@@ -79,6 +91,19 @@ public class MateriaPrimaService {
         MateriaPrima materiaPrima = materiaPrimaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Matéria prima não encontrada"));
 
-        materiaPrimaRepository.delete(materiaPrima);
+        produtoMateriaRepository.findByMateriaId(id)
+                .forEach(produtoMateria -> {
+                    produtoMateria.softDelete();
+                    produtoMateriaRepository.save(produtoMateria);
+                });
+
+        movimentoStockMPRepository.findByMateriaId(id)
+                .forEach(movimento -> {
+                    movimento.softDelete();
+                    movimentoStockMPRepository.save(movimento);
+                });
+
+        materiaPrima.softDelete();
+        materiaPrimaRepository.save(materiaPrima);
     }
 }

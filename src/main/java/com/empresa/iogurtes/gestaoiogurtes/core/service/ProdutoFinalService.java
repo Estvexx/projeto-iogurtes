@@ -2,7 +2,10 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoFinal;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoMateria;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaOrdemRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaPalletRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockPFRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.ProdutoFinalValidator;
@@ -20,15 +23,24 @@ public class ProdutoFinalService {
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final ProdutoFinalValidator produtoFinalValidator;
     private final ProdutoMateriaRepository produtoMateriaRepository;
+    private final MovimentoStockPFRepository movimentoStockPFRepository;
+    private final EncomendaPalletRepository encomendaPalletRepository;
+    private final EncomendaOrdemRepository encomendaOrdemRepository;
 
     public ProdutoFinalService(ProdutoFinalRepository produtoFinalRepository,
                                MateriaPrimaRepository materiaPrimaRepository,
                                ProdutoFinalValidator produtoFinalValidator,
-                               ProdutoMateriaRepository produtoMateriaRepository) {
+                               ProdutoMateriaRepository produtoMateriaRepository,
+                               MovimentoStockPFRepository movimentoStockPFRepository,
+                               EncomendaPalletRepository encomendaPalletRepository,
+                               EncomendaOrdemRepository encomendaOrdemRepository) {
         this.produtoFinalRepository = produtoFinalRepository;
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.produtoFinalValidator = produtoFinalValidator;
         this.produtoMateriaRepository = produtoMateriaRepository;
+        this.movimentoStockPFRepository = movimentoStockPFRepository;
+        this.encomendaPalletRepository = encomendaPalletRepository;
+        this.encomendaOrdemRepository = encomendaOrdemRepository;
     }
 
     @Transactional
@@ -79,6 +91,10 @@ public class ProdutoFinalService {
     }
 
     public List<ProdutoFinal> getAll() {
+        return produtoFinalRepository.findAllByIsActiveTrue();
+    }
+
+    public List<ProdutoFinal> getAllIncludingInactive() {
         return produtoFinalRepository.findAll();
     }
 
@@ -87,7 +103,31 @@ public class ProdutoFinalService {
         ProdutoFinal produto = produtoFinalRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado!"));
 
-        produtoFinalRepository.delete(produto);
+        produtoMateriaRepository.findByProdutoId(id)
+                .forEach(pm -> {
+                    pm.softDelete();
+                    produtoMateriaRepository.save(pm);
+                });
+
+        movimentoStockPFRepository.findByProdutoId(id)
+                .forEach(movimento -> {
+                    movimento.softDelete();
+                    movimentoStockPFRepository.save(movimento);
+                });
+
+        encomendaPalletRepository.findByProdutoId(id)
+                .forEach(ep -> {
+                    encomendaOrdemRepository.findByEncomendaPalletId(ep.getId())
+                            .forEach(eo -> {
+                                eo.softDelete();
+                                encomendaOrdemRepository.save(eo);
+                            });
+                    ep.softDelete();
+                    encomendaPalletRepository.save(ep);
+                });
+
+        produto.softDelete();
+        produtoFinalRepository.save(produto);
     }
 /*
     @Transactional(readOnly = true)

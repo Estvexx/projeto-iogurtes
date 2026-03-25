@@ -2,17 +2,11 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "produto_materias",
         uniqueConstraints = @UniqueConstraint(columnNames = {"produto_id", "materia_id"}))
-public class ProdutoMateria {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class ProdutoMateria extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false)
@@ -24,9 +18,6 @@ public class ProdutoMateria {
 
     @Column(name = "quantidade_por_unidade_produto", nullable = false, precision = 12, scale = 3)
     private BigDecimal quantidadePorUnidadeProduto;
-
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
 
     public ProdutoMateria() {}
 
@@ -42,27 +33,18 @@ public class ProdutoMateria {
         this.quantidadePorUnidadeProduto = quantidadePorUnidadeProduto;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    public UUID getId() { return id; }
     public ProdutoFinal getProduto() { return produto; }
     public MateriaPrima getMateria() { return materia; }
     public BigDecimal getQuantidadePorUnidadeProduto() { return quantidadePorUnidadeProduto; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setMateria(MateriaPrima materia) { this.materia = materia; }
     public void setQuantidadePorUnidadeProduto(BigDecimal quantidade) { this.quantidadePorUnidadeProduto = quantidade; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     @Override
     public String toString() {
         return "ProdutoMateria{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", produto=" + produto.getNome() +
                 ", materia=" + materia.getNome() +
                 ", quantidade=" + quantidadePorUnidadeProduto +

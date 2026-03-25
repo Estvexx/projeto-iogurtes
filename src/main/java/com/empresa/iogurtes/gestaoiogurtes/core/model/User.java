@@ -3,19 +3,12 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.ArrayList;
-
-import java.util.UUID;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class User extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "empresa_id")
@@ -37,12 +30,6 @@ public class User {
     @Column(name = "data_admissao")
     private LocalDate dataAdmissao;
 
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updatedat")
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserRole> roles = new ArrayList<>();
 
@@ -58,43 +45,26 @@ public class User {
         this.dataAdmissao = dataAdmissao;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public UUID getId(){ return id; }
     public Empresa getEmpresa() { return empresa; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public TurnoTipo getTurno() { return turno; }
     public LocalDate getDataAdmissao() { return dataAdmissao; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<UserRole> getRoles() { return roles; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
     public void setNome(String nome) { this.nome = nome; }
     public void setEmail(String email) { this.email = email; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setTurno(TurnoTipo turno) { this.turno = turno; }
     public void setDataAdmissao(LocalDate dataAdmissao) { this.dataAdmissao = dataAdmissao; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setRoles(List<UserRole> roles) { this.roles = roles; }
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", nome='" + nome + '\'' +
                 ", email='" + email + '\'' +
                 ", turno=" + turno +

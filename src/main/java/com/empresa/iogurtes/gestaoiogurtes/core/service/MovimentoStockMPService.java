@@ -66,6 +66,10 @@ public class MovimentoStockMPService {
     }
 
     public List<MovimentoStockMP> getAll() {
+        return movimentoRepository.findAllByIsActiveTrue();
+    }
+
+    public List<MovimentoStockMP> getAllIncludingInactive() {
         return movimentoRepository.findAll();
     }
 }

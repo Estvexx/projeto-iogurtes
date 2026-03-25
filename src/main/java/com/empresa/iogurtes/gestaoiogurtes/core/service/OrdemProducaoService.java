@@ -3,6 +3,8 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaOrdemRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockPFRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.OrdemProducaoRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
@@ -24,6 +26,8 @@ public class OrdemProducaoService {
     private final UserRepository userRepository;
     private final MovimentoStockPFService movimentoStockPFService;
     private final MovimentoStockMPService movimentoStockMPService;
+    private final EncomendaOrdemRepository encomendaOrdemRepository;
+    private final MovimentoStockPFRepository movimentoStockPFRepository;
     private final OrdemProducaoValidator validator;
 
     public OrdemProducaoService(OrdemProducaoRepository ordemRepository,
@@ -31,12 +35,16 @@ public class OrdemProducaoService {
                                 UserRepository userRepository,
                                 MovimentoStockPFService movimentoStockPFService,
                                 OrdemProducaoValidator validator,
-                                MovimentoStockMPService movimentoStockMPService) {
+                                MovimentoStockMPService movimentoStockMPService,
+                                EncomendaOrdemRepository encomendaOrdemRepository,
+                                MovimentoStockPFRepository movimentoStockPFRepository) {
         this.ordemRepository = ordemRepository;
         this.produtoFinalRepository = produtoFinalRepository;
         this.userRepository = userRepository;
         this.movimentoStockPFService = movimentoStockPFService;
         this.movimentoStockMPService = movimentoStockMPService;
+        this.encomendaOrdemRepository = encomendaOrdemRepository;
+        this.movimentoStockPFRepository = movimentoStockPFRepository;
         this.validator = validator;
     }
 
@@ -99,7 +107,34 @@ public class OrdemProducaoService {
 
 
     public List<OrdemProducao> getAll() {
+        return ordemRepository.findAllByIsActiveTrue();
+    }
+
+    public List<OrdemProducao> getAllIncludingInactive() {
         return ordemRepository.findAll();
+    }
+
+    @Transactional
+    public void delete(UUID id) {
+        OrdemProducao ordem = getById(id);
+
+        ordem.getProdutos().forEach(produto -> produto.softDelete());
+        ordem.getConsumos().forEach(consumo -> consumo.softDelete());
+
+        encomendaOrdemRepository.findByOrdemId(id)
+                .forEach(eo -> {
+                    eo.softDelete();
+                    encomendaOrdemRepository.save(eo);
+                });
+
+        movimentoStockPFRepository.findByOrdemId(id)
+                .forEach(movimento -> {
+                    movimento.softDelete();
+                    movimentoStockPFRepository.save(movimento);
+                });
+
+        ordem.softDelete();
+        ordemRepository.save(ordem);
     }
 
 

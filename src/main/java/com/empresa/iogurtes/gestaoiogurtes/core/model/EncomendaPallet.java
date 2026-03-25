@@ -2,7 +2,6 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,11 +9,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "encomenda_pallets",
         uniqueConstraints = @UniqueConstraint(columnNames = {"encomenda_id", "produto_id", "pallet_tipo_id"}))
-public class EncomendaPallet {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class EncomendaPallet extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "encomenda_id", nullable = false)
@@ -33,12 +28,6 @@ public class EncomendaPallet {
 
     @Column(name = "preco_por_pallet", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoPorPallet;
-
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updatedat")
-    private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "encomendaPallet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EncomendaOrdem> ordens;
@@ -63,41 +52,24 @@ public class EncomendaPallet {
         this.precoPorPallet = precoPorPallet;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public UUID getId() { return id; }
     public Encomenda getEncomenda() { return encomenda; }
     public ProdutoFinal getProduto() { return produto; }
     public PalletTipo getPalletTipo() { return palletTipo; }
     public Integer getQuantidadePallets() { return quantidadePallets; }
     public BigDecimal getPrecoPorPallet() { return precoPorPallet; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
     public List<EncomendaOrdem> getOrdens() { return ordens; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setEncomenda(Encomenda encomenda) { this.encomenda = encomenda; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setPalletTipo(PalletTipo palletTipo) { this.palletTipo = palletTipo; }
     public void setQuantidadePallets(Integer quantidadePallets) { this.quantidadePallets = quantidadePallets; }
     public void setPrecoPorPallet(BigDecimal precoPorPallet) { this.precoPorPallet = precoPorPallet; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setOrdens(List<EncomendaOrdem> ordens) { this.ordens = ordens; }
 
     @Override
     public String toString() {
         return "EncomendaPallet{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", produto=" + produto.getNome() +
                 ", quantidadePallets=" + quantidadePallets +
                 ", precoPorPallet=" + precoPorPallet +

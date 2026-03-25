@@ -1,21 +1,15 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
-
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.expression.Strings;
 
 import java.time.LocalDate;
 import java.util.List;
-
 import java.util.UUID;
 
 
@@ -26,12 +20,30 @@ public class UserService {
     private final UserValidator userValidator;
     private final BCryptPasswordEncoder passwordEncoder;
     private final EmpresaRepository empresaRepository;
+    private final EncomendaRepository encomendaRepository;
+    private final EncomendaPalletRepository encomendaPalletRepository;
+    private final EncomendaOrdemRepository encomendaOrdemRepository;
+    private final OrdemProducaoRepository ordemProducaoRepository;
+    private final MovimentoStockMPRepository movimentoStockMPRepository;
 
-    public UserService(UserRepository userRepository, UserValidator userValidator, BCryptPasswordEncoder passwordEncoder, EmpresaRepository empresaRepository) {
+    public UserService(UserRepository userRepository,
+                       UserValidator userValidator,
+                       BCryptPasswordEncoder passwordEncoder,
+                       EmpresaRepository empresaRepository,
+                       EncomendaRepository encomendaRepository,
+                       EncomendaPalletRepository encomendaPalletRepository,
+                       EncomendaOrdemRepository encomendaOrdemRepository,
+                       OrdemProducaoRepository ordemProducaoRepository,
+                       MovimentoStockMPRepository movimentoStockMPRepository) {
         this.userRepository = userRepository;
         this.userValidator = userValidator;
         this.passwordEncoder = passwordEncoder;
         this.empresaRepository = empresaRepository;
+        this.encomendaRepository = encomendaRepository;
+        this.encomendaPalletRepository = encomendaPalletRepository;
+        this.encomendaOrdemRepository = encomendaOrdemRepository;
+        this.ordemProducaoRepository = ordemProducaoRepository;
+        this.movimentoStockMPRepository = movimentoStockMPRepository;
     }
 
     @Transactional
@@ -101,6 +113,10 @@ public class UserService {
     }
 
     public List<User> getAll() {
+        return userRepository.findAllByIsActiveTrue();
+    }
+
+    public List<User> getAllIncludingInactive() {
         return userRepository.findAll();
     }
 
@@ -110,6 +126,44 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
 
-        userRepository.delete(user);
+        ordemProducaoRepository.findByUserId(id)
+                .forEach(ordem -> {
+                    ordem.getProdutos().forEach(produto -> produto.softDelete());
+                    ordem.getConsumos().forEach(consumo -> consumo.softDelete());
+                    encomendaOrdemRepository.findByOrdemId(ordem.getId())
+                            .forEach(eo -> {
+                                eo.softDelete();
+                                encomendaOrdemRepository.save(eo);
+                            });
+                    ordem.softDelete();
+                    ordemProducaoRepository.save(ordem);
+                });
+
+        encomendaRepository.findByUserId(id)
+                .forEach(encomenda -> {
+                    for (EncomendaPallet pallet : encomenda.getPallets()) {
+                        for (EncomendaOrdem encomendaOrdem : pallet.getOrdens()) {
+                            encomendaOrdem.softDelete();
+                            encomendaOrdemRepository.save(encomendaOrdem);
+                        }
+                        pallet.softDelete();
+                        encomendaPalletRepository.save(pallet);
+                    }
+                    encomenda.softDelete();
+                    encomendaRepository.save(encomenda);
+                });
+
+        movimentoStockMPRepository.findByUserId(id)
+                .forEach(movimento -> {
+                    movimento.softDelete();
+                    movimentoStockMPRepository.save(movimento);
+                });
+
+        for (UserRole role : user.getRoles()) {
+            role.softDelete();
+        }
+
+        user.softDelete();
+        userRepository.save(user);
     }
 }

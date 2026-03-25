@@ -2,17 +2,11 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "produtos_finais")
-public class ProdutoFinal {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class ProdutoFinal extends BaseEntity {
 
     @Column(name = "codigo_sku", unique = true, nullable = false, length = 50)
     private String codigoSku;
@@ -41,12 +35,6 @@ public class ProdutoFinal {
     @Column(name = "quantidade_lote", nullable = false)
     private Integer quantidadeLote = 1;
 
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updatedat")
-    private LocalDateTime updatedAt;
-
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProdutoMateria> materias;
 
@@ -64,18 +52,6 @@ public class ProdutoFinal {
         this.quantidadeLote = quantidadeLote;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    private void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public UUID getId() { return id; }
     public String getCodigoSku() { return codigoSku; }
     public String getNome() { return nome; }
     public String getDescricao() { return descricao; }
@@ -85,11 +61,8 @@ public class ProdutoFinal {
     public Boolean getVisivelCliente() { return visivelCliente; }
     public Integer getStockAtual() { return stockAtual; }
     public Integer getQuantidadeLote() { return quantidadeLote; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public List<ProdutoMateria> getMaterias() { return materias; }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            public List<ProdutoMateria> getMaterias() { return materias; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setCodigoSku(String codigoSku) { this.codigoSku = codigoSku; }
     public void setNome(String nome) { this.nome = nome; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
@@ -99,14 +72,12 @@ public class ProdutoFinal {
     public void setVisivelCliente(Boolean visivelCliente) { this.visivelCliente = visivelCliente; }
     public void setStockAtual(Integer stockAtual) { this.stockAtual = stockAtual; }
     public void setQuantidadeLote(Integer quantidadeLote) { this.quantidadeLote = quantidadeLote; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     public void setMaterias(List<ProdutoMateria> materias) { this.materias = materias; }
 
     @Override
     public String toString() {
         return "ProdutoFinal{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", codigoSku='" + codigoSku + '\'' +
                 ", nome='" + nome + '\'' +
                 ", stockAtual=" + stockAtual +

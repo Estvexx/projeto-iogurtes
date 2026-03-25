@@ -1,6 +1,8 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.PalletTipo;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaOrdemRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaPalletRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.PalletTipoRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.PalletTipoValidator;
 import org.springframework.stereotype.Service;
@@ -14,11 +16,17 @@ import java.util.UUID;
 public class PalletTipoService {
 
     private final PalletTipoRepository palletTipoRepository;
+    private final EncomendaPalletRepository encomendaPalletRepository;
+    private final EncomendaOrdemRepository encomendaOrdemRepository;
     private final PalletTipoValidator validator;
 
     public PalletTipoService(PalletTipoRepository palletTipoRepository,
+                             EncomendaPalletRepository encomendaPalletRepository,
+                             EncomendaOrdemRepository encomendaOrdemRepository,
                              PalletTipoValidator validator) {
         this.palletTipoRepository = palletTipoRepository;
+        this.encomendaPalletRepository = encomendaPalletRepository;
+        this.encomendaOrdemRepository = encomendaOrdemRepository;
         this.validator = validator;
     }
 
@@ -35,7 +43,11 @@ public class PalletTipoService {
     }
 
     public List<PalletTipo> getAll() {
-        return palletTipoRepository.findByIsActiveTrue();
+        return palletTipoRepository.findAllByIsActiveTrue();
+    }
+
+    public List<PalletTipo> getAllIncludingInactive() {
+        return palletTipoRepository.findAll();
     }
 
     @Transactional
@@ -53,7 +65,19 @@ public class PalletTipoService {
     @Transactional
     public void delete(UUID id) {
         PalletTipo palletTipo = getById(id);
-        palletTipo.setActive(false);
+
+        encomendaPalletRepository.findByPalletTipoId(id)
+                .forEach(ep -> {
+                    encomendaOrdemRepository.findByEncomendaPalletId(ep.getId())
+                            .forEach(eo -> {
+                                eo.softDelete();
+                                encomendaOrdemRepository.save(eo);
+                            });
+                    ep.softDelete();
+                    encomendaPalletRepository.save(ep);
+                });
+
+        palletTipo.softDelete();
         palletTipoRepository.save(palletTipo);
     }
 }

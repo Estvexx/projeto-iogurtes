@@ -1,6 +1,7 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.EmpresaValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,10 +14,17 @@ import java.util.List;
 public class EmpresaService {
 
     private final EmpresaRepository empresaRepository;
+    private final UserRepository userRepository;
+    private final UserService userService;
     private final EmpresaValidator empresaValidator;
 
-    public EmpresaService(EmpresaRepository empresaRepository, EmpresaValidator empresaValidator) {
+    public EmpresaService(EmpresaRepository empresaRepository,
+                          UserRepository userRepository,
+                          UserService userService,
+                          EmpresaValidator empresaValidator) {
         this.empresaRepository = empresaRepository;
+        this.userRepository = userRepository;
+        this.userService = userService;
         this.empresaValidator = empresaValidator;
     }
 
@@ -36,6 +44,10 @@ public class EmpresaService {
     }
 
     public List<Empresa> getAll() {
+        return empresaRepository.findAllByIsActiveTrue();
+    }
+
+    public List<Empresa> getAllIncludingInactive() {
         return empresaRepository.findAll();
     }
 
@@ -60,6 +72,11 @@ public class EmpresaService {
     public void delete(UUID id) {
         // Coloquei o get para simplesmente nao poder dar delete a algo que não existe
         Empresa empresa = getById(id);
-        empresaRepository.delete(empresa);
+
+        userRepository.findByEmpresaId(id)
+                .forEach(user -> userService.delete(user.getId()));
+
+        empresa.softDelete();
+        empresaRepository.save(empresa);
     }
 }

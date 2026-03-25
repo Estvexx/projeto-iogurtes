@@ -2,16 +2,10 @@ package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "movimentos_stock_pf")
-public class MovimentoStockPF {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class MovimentoStockPF extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "produto_id", nullable = false)
@@ -31,9 +25,6 @@ public class MovimentoStockPF {
     @Column(name = "observacao", length = 200)
     private String observacao;
 
-    @Column(name = "createdat")
-    private LocalDateTime createdAt;
-
     public MovimentoStockPF() {}
 
     public MovimentoStockPF(ProdutoFinal produto, OrdemProducao ordem, TipoMovimentoPF tipo,
@@ -45,31 +36,22 @@ public class MovimentoStockPF {
         this.observacao = observacao;
     }
 
-    @PrePersist
-    private void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    public UUID getId() { return id; }
     public ProdutoFinal getProduto() { return produto; }
     public OrdemProducao getOrdem() { return ordem; }
     public TipoMovimentoPF getTipo() { return tipo; }
     public Integer getQuantidadeKg() { return quantidadeKg; }
     public String getObservacao() { return observacao; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
 
-    public void setId(UUID id) { this.id = id; }
     public void setProduto(ProdutoFinal produto) { this.produto = produto; }
     public void setOrdem(OrdemProducao ordem) { this.ordem = ordem; }
     public void setTipo(TipoMovimentoPF tipo) { this.tipo = tipo; }
     public void setQuantidadeKg(Integer quantidadeKg) { this.quantidadeKg = quantidadeKg; }
     public void setObservacao(String observacao) { this.observacao = observacao; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     @Override
     public String toString() {
         return "MovimentoStockPF{" +
-                "id=" + id +
+                "id=" + getId() +
                 ", tipo=" + tipo +
                 ", quantidadeKg=" + quantidadeKg +
                 '}';
