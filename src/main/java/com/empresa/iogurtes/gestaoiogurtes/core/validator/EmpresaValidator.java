@@ -69,10 +69,16 @@ public class EmpresaValidator {
 
     private void validarMorada(String morada) {
         if (morada == null || morada.isBlank()) {
-            return; // Opcional
+            return; // opcional
         }
+
         if (morada.length() > 200) {
             throw new IllegalArgumentException("Morada não pode exceder 200 caracteres");
+        }
+
+        // evita lixo como alguns simbolos aleatorios desnecessarios
+        if (!morada.matches("^[\\p{L}0-9 .,\\-º/]+$")) {
+            throw new IllegalArgumentException("Morada contém caracteres inválidos");
         }
     }
 
@@ -89,12 +95,19 @@ public class EmpresaValidator {
 
     private void validarCidade(String cidade) {
         if (cidade == null || cidade.isBlank()) {
-            return;
+            return; // opcional
         }
+
         if (cidade.length() > 100) {
             throw new IllegalArgumentException("Cidade não pode exceder 100 caracteres");
         }
+
+        // permite letras, espaços e alguns caracteres comuns
+        if (!cidade.matches("^[\\p{L} .'-]+$")) {
+            throw new IllegalArgumentException("Cidade contém caracteres inválidos");
+        }
     }
+
     // Validação para o update
     private void validarNipcUpdate(UUID id, String nipc) {
 
