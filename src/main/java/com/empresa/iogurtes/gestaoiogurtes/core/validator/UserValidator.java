@@ -1,170 +1,159 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 public class UserValidator {
 
     private final UserRepository userRepository;
     private final EmpresaRepository empresaRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public UserValidator(UserRepository userRepository, EmpresaRepository empresaRepository) {
+    public UserValidator(UserRepository userRepository,
+                         EmpresaRepository empresaRepository,
+                         UserRoleRepository userRoleRepository) {
         this.userRepository = userRepository;
         this.empresaRepository = empresaRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
-    public void validateCreateUser(String nome,
-                                   String email,
-                                   String password,
-                                   TurnoTipo turno,
-                                   LocalDate dataAdmissao,
-                                   List<UserRole> roles,
-                                   UUID empresaId) {
+    public ValidatedFuncionario validateCreateFuncionario(CreateFuncionarioRequest info) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
+        validarDataAdmissao(info.dataAdmissao());
 
-        validarNome(nome);
-        validarPassword(password);
-        validarRoles(roles);
-        validarEmail(email);
-        validarDataAdmissao(dataAdmissao);
-        validarTurnoPorRole(turno, roles);
-        validarEmpresaPorRole(empresaId, roles);
+        TurnoTipo turno = parseTurno(info.turno());
+        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+
+        UserRole role = parseRole(info.role());
+
+        return new ValidatedFuncionario(info.nome(), info.email(), info.password(),
+                turno, role, info.dataAdmissao());
     }
 
-    public void validateUpdateUser(String nome, TurnoTipo turno, List<UserRole> roles) {
+    public ValidatedCliente validateCreateCliente(CreateClienteRequest info) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
 
-        validarNome(nome);
-        validarTurnoPorRole(turno, roles);
+        if (info.empresaId() == null) throw new ValidationException(ValidationErrorCode.EMPRESA_NULL);
+        Empresa empresa = empresaRepository.findById(info.empresaId())
+                .orElseThrow(() -> new ValidationException(ValidationErrorCode.EMPRESA_NOT_FOUND));
 
+        UserRole role = parseRole(info.role());
+
+        return new ValidatedCliente(info.nome(), info.email(), info.password(), role, empresa);
     }
 
+    public ValidatedAdmin validateCreateAdmin(CreateAdminRequest info) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
+
+        UserRole role = parseRole(info.role());
+
+        return new ValidatedAdmin(info.nome(), info.email(), info.password(), role);
+    }
+
+    public ValidatedGestor validateCreateGestor(CreateGestorRequest info) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
+        validarDataAdmissao(info.dataAdmissao());
+
+        UserRole role = parseRole(info.role());
+
+        return new ValidatedGestor(info.nome(), info.email(), info.password(),
+                role, info.dataAdmissao());
+    }
+
+    public ValidatedUpdateFuncionario validateUpdateFuncionario(UpdateFuncionarioRequest info) {
+        validarNome(info.nome());
+        validarDataAdmissao(info.dataAdmissao());
+
+        TurnoTipo turno = parseTurno(info.turno());
+        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+
+        return new ValidatedUpdateFuncionario(info.nome(), turno, info.dataAdmissao());
+    }
+
+    public ValidatedUpdateCliente validateUpdateCliente(UpdateClienteRequest info) {
+        validarNome(info.nome());
+        return new ValidatedUpdateCliente(info.nome());
+    }
+
+    public ValidatedUpdateAdmin validateUpdateAdmin(UpdateAdminRequest info) {
+        validarNome(info.nome());
+        return new ValidatedUpdateAdmin(info.nome());
+    }
+
+    public ValidatedUpdateGestor validateUpdateGestor(UpdateGestorRequest info) {
+        validarNome(info.nome());
+        validarDataAdmissao(info.dataAdmissao());
+        return new ValidatedUpdateGestor(info.nome(), info.dataAdmissao());
+    }
 
     private void validarNome(String nome) {
-        if (nome == null || nome.length() < 4 || nome.length() > 60) {
-            throw new IllegalArgumentException("Nome deve ter entre 4 e 60 caracteres");
-        }
-    }
-
-    private void validarPassword(String password) {
-        if (password == null || password.length() < 8) {
-            throw new IllegalArgumentException("A password deve ter pelo menos 8 caracteres");
-        }
-
-        boolean hasUpper = password.chars().anyMatch(Character::isUpperCase);
-        boolean hasLower = password.chars().anyMatch(Character::isLowerCase);
-        boolean hasDigit = password.chars().anyMatch(Character::isDigit);
-        boolean hasSymbol = password.chars().anyMatch(c -> "!@#$%^&*()_+-=[]{}|;:'\",.<>?/".indexOf(c) >= 0); // VERIFICAR SE SÓ ASSIM POR ACASO TEM SIMBOLOS
-
-        if (!hasUpper) throw new IllegalArgumentException("A password deve ter pelo menos uma letra maiúscula");
-        if (!hasLower) throw new IllegalArgumentException("A password deve ter pelo menos uma letra minúscula");
-        if (!hasDigit) throw new IllegalArgumentException("A password deve ter pelo menos um número");
-        if (!hasSymbol) throw new IllegalArgumentException("A password deve ter pelo menos um símbolo especial");
-    }
-
-    public void validatePasswordForChange(String password) {
-        validarPassword(password);
-    }
-
-    private void validarRoles(List<UserRole> roles) {
-        if (roles == null || roles.isEmpty()) {
-            throw new IllegalArgumentException("O utilizador deve ter pelo menos uma role");
-        }
+        if (nome == null) throw new ValidationException(ValidationErrorCode.NOME_NULL);
+        if (nome.length() < 4) throw new ValidationException(ValidationErrorCode.NOME_TOO_SHORT);
+        if (nome.length() > 60) throw new ValidationException(ValidationErrorCode.NOME_TOO_LONG);
     }
 
     private void validarEmail(String email) {
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email é obrigatório");
-        }
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new IllegalArgumentException("Formato de email inválido");
-        }
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Já existe um utilizador com este email");
-        }
+        if (email == null || email.isBlank()) throw new ValidationException(ValidationErrorCode.EMAIL_NULL);
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) throw new ValidationException(ValidationErrorCode.EMAIL_INVALID_FORMAT);
+        if (userRepository.existsByEmail(email)) throw new ValidationException(ValidationErrorCode.EMAIL_ALREADY_EXISTS);
+    }
+
+    private void validarPassword(String password) {
+        if (password == null) throw new ValidationException(ValidationErrorCode.PASSWORD_NULL);
+        if (password.length() < 8) throw new ValidationException(ValidationErrorCode.PASSWORD_TOO_SHORT);
+
+        if (password.chars().noneMatch(Character::isUpperCase))
+            throw new ValidationException(ValidationErrorCode.PASSWORD_NO_UPPERCASE);
+        if (password.chars().noneMatch(Character::isLowerCase))
+            throw new ValidationException(ValidationErrorCode.PASSWORD_NO_LOWERCASE);
+        if (password.chars().noneMatch(Character::isDigit))
+            throw new ValidationException(ValidationErrorCode.PASSWORD_NO_DIGIT);
+        if (password.chars().noneMatch(c -> "!@#$%^&*()_+-=[]{}|;:'\",.<>?/".indexOf(c) >= 0))
+            throw new ValidationException(ValidationErrorCode.PASSWORD_NO_SYMBOL);
     }
 
     private void validarDataAdmissao(LocalDate dataAdmissao) {
-        if (dataAdmissao != null && dataAdmissao.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("A data de admissão não pode ser no futuro");
-        }
+        if (dataAdmissao != null && dataAdmissao.isAfter(LocalDate.now()))
+            throw new ValidationException(ValidationErrorCode.DATA_ADMISSAO_FUTURE);
     }
 
-    private void validarTurnoPorRole(TurnoTipo turno, List<UserRole> roles) {
-
-        boolean precisaTurno = roles.stream()
-                .anyMatch(role -> role.getRole() == UserRoleType.FUNCIONARIO);
-
-        boolean naoprecisaTurno = roles.stream()
-                .anyMatch(role -> role.getRole() == UserRoleType.EMPRESA);
-
-        if (precisaTurno && turno == null) {
-            throw new IllegalArgumentException("Funcionarios precisam de turno");
-        }
-
-        if(naoprecisaTurno && turno != null){
-            throw new IllegalArgumentException("Empresas não podem ter turno associado");
-        }
-    }
-
-    private void validarEmpresaPorRole(UUID empresaId, List<UserRole> roles) {
-        boolean isEmpresa = roles.stream()
-                .anyMatch(role -> role.getRole() == UserRoleType.EMPRESA);
-
-        if (isEmpresa && empresaId == null) {
-            throw new IllegalArgumentException("User do tipo empresa deve ter uma empresa associada!");
-        }
-
-        if (isEmpresa && !empresaRepository.existsById(empresaId)) {
-            throw new IllegalArgumentException("Empresa não encontrada!");
-        }
-
-        if (!isEmpresa && empresaId != null) {
-            throw new IllegalArgumentException("Admin e funcionario não podem ter empresa associada!");
-        }
-    }
-
-    public List<UserRole> validateAndParseRoles(List<String> roles) {
-        if (roles == null || roles.isEmpty()) {
-            throw new IllegalArgumentException("É necessário pelo menos um role"); // InvalidRoleException
-        }
-
-        boolean temEmpresa = roles.stream()
-                .anyMatch(r -> r.equalsIgnoreCase("EMPRESA"));
-        boolean temFuncionario = roles.stream()
-                .anyMatch(r -> r.equalsIgnoreCase("FUNCIONARIO"));
-
-        if (temEmpresa && temFuncionario) {
-            throw new IllegalArgumentException("Um utilizador não pode ser EMPRESA e FUNCIONARIO simultaneamente");
-        }
-
-        return roles.stream()
-                .map(role -> {
-                    try {
-                        return new UserRole(UserRoleType.valueOf(role.toUpperCase()));
-                    } catch (IllegalArgumentException e) {
-                        throw new IllegalArgumentException("Role inválido: " + role);
-                    }
-                })
-                // retorno collect to list porque a lista tem de ser mutavel
-                .collect(Collectors.toList());
-    }
-
-    public TurnoTipo validateAndParseTurno(String turno) {
-        if (turno == null) return null; // se for opcional
-
+    private TurnoTipo parseTurno(String turno) {
+        if (turno == null) return null; //retorno null porque para as outras validaçoes
         try {
             return TurnoTipo.valueOf(turno.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Turno inválido: " + turno);  // InvalidTurnoException
+            throw new ValidationException(ValidationErrorCode.TURNO_INVALID);
+        }
+    }
+
+    private UserRole parseRole(String role) {
+        if (role == null) throw new ValidationException(ValidationErrorCode.ROLE_NULL);
+        try {
+            UserRoleType roleType = UserRoleType.valueOf(role.toUpperCase());
+            return userRoleRepository.findByRole(roleType)
+                    .orElseThrow(() -> new ValidationException(ValidationErrorCode.ROLE_NOT_FOUND));
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(ValidationErrorCode.ROLE_INVALID);
         }
     }
 }

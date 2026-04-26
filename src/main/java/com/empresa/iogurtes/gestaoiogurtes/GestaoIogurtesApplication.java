@@ -1,9 +1,16 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoCertificacao;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.EmpresaResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateAdminRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateClienteRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateFuncionarioRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateGestorRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.service.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -11,17 +18,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @EnableScheduling
 @SpringBootApplication
 public class GestaoIogurtesApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(GestaoIogurtesApplication.class, args);
 	}
 
@@ -35,16 +39,85 @@ public class GestaoIogurtesApplication {
 								 OrdemProducaoService ordemProducaoService,
 								 PalletTipoService palletTipoService,
 								 EncomendaService encomendaService,
-								 LoginService loginService) {
+								 LoginService loginService,
+								 UserRoleRepository userRoleRepository) {
 		return args -> {
-			// Secçao de Empresa
-			Empresa e1 = empresaService.createEmpresa("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão");
-			Empresa e2 = empresaService.createEmpresa("Frutas do Vale Lda", "509876543", "+351275123456", "Quinta da Fruta Fresca, Lote 12", "6230-456", "Fundão");
-			Empresa e3 = empresaService.createEmpresa("Embalagens Alimentar S.A.", "508765432", "+351234567890", "Zona Industrial de Aveiro, Lote 8", "3800-123", "Aveiro");
-			Empresa e4 = empresaService.createEmpresa("Açúcares & Mel Portugal", "507654321", "+351243987654", "Estrada Nacional 3, Km 145", "2000-123", "Santarém");
-			Empresa e5 = empresaService.createEmpresa("Cacau & Especiarias Gourmet", "506543210", "+351213456789", "Avenida da República, 88, Piso 3", "1050-012", "Lisboa");
 
-			// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
+			for (UserRoleType roleType : UserRoleType.values()) {
+				if (userRoleRepository.findByRole(roleType).isEmpty()) {
+					userRoleRepository.save(new UserRole(roleType));
+				}
+			}
+
+			userService.createAdmin(new CreateAdminRequest("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", "ADMIN"));
+			userService.createAdmin(new CreateAdminRequest("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", "ADMIN"));
+			userService.createAdmin(new CreateAdminRequest("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789", "ADMIN"));
+			userService.createGestor(new CreateGestorRequest("Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@123", "GESTOR", LocalDate.of(2022, 3, 15)));
+			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", "GESTOR", LocalDate.of(2021, 7, 20)));
+			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", "GESTOR", LocalDate.of(2023, 1, 10)));
+			userService.createFuncionario(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", "FUNCIONARIO_MP", LocalDate.of(2024, 3, 1)));
+			userService.createFuncionario(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", "FUNCIONARIO_OP", LocalDate.of(2023, 11, 15)));
+			userService.createFuncionario(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", "FUNCIONARIO_MP", LocalDate.of(2022, 6, 5)));
+
+			System.out.println("\n========== LISTAGEM DE USERS ==========");
+			userService.findAllActive().forEach(System.out::println);
+			System.out.println("\n========== TODOS OS USERS ATIVOS ==========");
+			userService.findAllActive().forEach(System.out::println);
+			System.out.println("\n========== ADMINS ==========");
+			userService.findAllAdmins().forEach(System.out::println);
+			System.out.println("\n========== GESTORES ==========");
+			userService.findAllGestores().forEach(System.out::println);
+			System.out.println("\n========== FUNCIONARIOS (MP + OP) ==========");
+			userService.findAllFuncionarios().forEach(System.out::println);
+			System.out.println("\n========== FUNCIONARIOS MP ==========");
+			userService.findAllFuncionarios_MP().forEach(System.out::println);
+			System.out.println("\n========== FUNCIONARIOS OP ==========");
+			userService.findAllFuncionarios_OP().forEach(System.out::println);
+			System.out.println("\n========== CLIENTES ==========");
+			userService.findAllClientes().forEach(System.out::println);
+			System.out.println("\n========== USERS INATIVOS ==========");
+			userService.findAllInactive().forEach(System.out::println);
+
+			// ========== CRIAR EMPRESAS ==========
+			EmpresaResponse e1 = empresaService.createEmpresa(new CreateEmpresaRequest("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão"));
+			EmpresaResponse e2 = empresaService.createEmpresa(new CreateEmpresaRequest("Frutas do Vale Lda", "509876543", "+351275123456", "Quinta da Fruta Fresca, Lote 12", "6230-456", "Fundão"));
+			EmpresaResponse e3 = empresaService.createEmpresa(new CreateEmpresaRequest("Embalagens Alimentar S.A.", "508765432", "+351234567890", "Zona Industrial de Aveiro, Lote 8", "3800-123", "Aveiro"));
+			EmpresaResponse e4 = empresaService.createEmpresa(new CreateEmpresaRequest("Açúcares & Mel Portugal", "507654321", "+351243987654", "Estrada Nacional 3, Km 145", "2000-123", "Santarém"));
+			EmpresaResponse e5 = empresaService.createEmpresa(new CreateEmpresaRequest("Cacau & Especiarias Gourmet", "506543210", "+351213456789", "Avenida da República, 88, Piso 3", "1050-012", "Lisboa"));
+
+			userService.createCliente(new CreateClienteRequest("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", "CLIENTE", e1.id()));
+
+			// Empresa para softdelete (sem clientes associados)
+			EmpresaResponse eApagar = empresaService.createEmpresa(new CreateEmpresaRequest("Empresa Para Apagar Lda", "500000001", "+351210000001", "Rua Temporária, 1", "1000-001", "Lisboa"));
+
+			// ========== UPDATES ==========
+			System.out.println("\n========== UPDATES EMPRESAS ==========");
+			EmpresaResponse e1Atualizada = empresaService.updateEmpresa(e1.id(), new UpdateEmpresaRequest("LactoNorte UPDATED", "501234567", "+351252999999", "Rua dos Laticínios, 200", "4760-012", "Vila Nova de Famalicão"));
+			System.out.println("Empresa atualizada: " + e1Atualizada);
+
+			EmpresaResponse e2Atualizada = empresaService.updateEmpresa(e2.id(), new UpdateEmpresaRequest("Frutas do Vale UPDATED", "509876543", "+351275999999", "Quinta Nova, Lote 99", "6230-456", "Fundão"));
+			System.out.println("Empresa atualizada: " + e2Atualizada);
+
+			// ========== SOFT DELETE ==========
+			System.out.println("\n========== SOFT DELETE EMPRESA ==========");
+			empresaService.softDelete(eApagar.id());
+			System.out.println("Empresa apagada: " + eApagar.id());
+
+			// ========== GETS ==========
+			System.out.println("\n========== TODAS AS EMPRESAS ATIVAS ==========");
+			empresaService.findAllActive().forEach(System.out::println);
+
+			System.out.println("\n========== TODAS AS EMPRESAS INATIVAS ==========");
+			empresaService.findAllInactive().forEach(System.out::println);
+
+			System.out.println("\n========== TODAS AS EMPRESAS ==========");
+			empresaService.findAll().forEach(System.out::println);
+
+			System.out.println("\n========== FIND BY ID ==========");
+			System.out.println(empresaService.findById(e1.id()));
+
+
+			/*// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
 			Empresa eTel1 = empresaService.createEmpresa("Empresa Telefone 1", "505111111", "912345678", "Rua A", "1000-001", "Lisboa");
 			Empresa eTel2 = empresaService.createEmpresa("Empresa Telefone 2", "504222222", "+351 913 222 333", "Rua B", "1000-002", "Porto");
 			Empresa eTel3 = empresaService.createEmpresa("Empresa Telefone 3", "503333333", "(351) 914444555", "Rua C", "1000-003", "Braga");
@@ -69,29 +142,13 @@ public class GestaoIogurtesApplication {
 			} catch (IllegalArgumentException ex) {
 				System.out.println("Telefone inválido bloqueado com sucesso: " + ex.getMessage());
 			}
-
-			UUID empresaId1 = e1 != null ? e1.getId() : null;
-			UUID empresaId2 = e2 != null ? e2.getId() : null;
-			UUID empresaId3 = e3 != null ? e3.getId() : null;
-			UUID empresaId4 = e4 != null ? e4.getId() : null;
-			UUID empresaId5 = e5 != null ? e5.getId() : null;
+*/
 
 
-			// Secçao de Users
-			User user1 = userService.createUser("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", "TARDE", LocalDate.of(2023, 5, 10), List.of("ADMIN"), null);
-			User user2 = userService.createUser("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", null, LocalDate.of(2022, 8, 15), List.of("ADMIN"), null);
-			User user3 = userService.createUser("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", LocalDate.of(2024, 3, 1), List.of("FUNCIONARIO"), null);
-			User user4 = userService.createUser("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", LocalDate.of(2023, 11, 15), List.of("FUNCIONARIO"), null);
-			User user5 = userService.createUser("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", null, null, List.of("EMPRESA"), empresaId1);
-			User user6 = userService.createUser("Sofia Ribeiro", "sofia.ribeiro@empresa.com", "SofiaRibeiro@99", null, null, List.of("EMPRESA"), empresaId2);
-			User user7 = userService.createUser("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789","MANHA",LocalDate.of(2024, 1, 20),List.of("ADMIN",  "FUNCIONARIO"), null);
 
-			UUID userId1 = user1 != null ? user1.getId() : null;
-			UUID userId2 = user2 != null ? user2.getId() : null;
-			UUID userId3 = user3 != null ? user3.getId() : null;
-			UUID userId4 = user4 != null ? user4.getId() : null;
-			UUID userId5 = user5 != null ? user5.getId() : null;
-			User user1Att = userService.updateUser(userId1, "Maria Costinha", "NOITE", List.of("ADMIN", "FUNCIONARIO"));
+
+
+
 
 			try {
 				User authUser = loginService.execute("maria.costa@empresa.com", "MariaCosta@123");
@@ -107,7 +164,7 @@ public class GestaoIogurtesApplication {
 				System.out.println("Login com password errada bloqueado: " + ex.getMessage());
 			}
 
-			// Secçao de Fornecedores
+			/*// Secçao de Fornecedores
 			Fornecedor forn1 = fornecedorService.createFornecedor("Agrilac S.A.", "501234567", "agrilac@fornecedor.com", "+351910000001", "Rua dos Laticínios, 10, Porto", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 12, 31))));
 			Fornecedor forn2 = fornecedorService.createFornecedor("BioLeite Lda", "509876543", "bioleite@fornecedor.com", "+351910000002", "Avenida do Campo, 55, Braga", List.of(new FornecedorCertificacao(TipoCertificacao.BIO, "Certificação Biológica", LocalDate.of(2026, 4, 15)), new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 22000", LocalDate.of(2026, 9, 20))));
 			Fornecedor forn3 = fornecedorService.createFornecedor("FrutasNorte", "508765432", "geral@frutasnorte.pt", "+351910000003", "Zona Agrícola Norte, Lote 4, Viseu", List.of(new FornecedorCertificacao(TipoCertificacao.BIO, "Bio Portugal", LocalDate.of(2026, 5, 10)), new FornecedorCertificacao(TipoCertificacao.HACCP, "HACCP Frutas", LocalDate.of(2026, 8, 15))));
@@ -132,10 +189,10 @@ public class GestaoIogurtesApplication {
 			MateriaPrima mpFramboesa = materiaPrimaService.createMateriaPrima("Polpa de Framboesa", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("20.000"), new BigDecimal("3.500"), fornId2);
 			MateriaPrima mpBaunilha = materiaPrimaService.createMateriaPrima("Extrato de Baunilha", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("3.000"), new BigDecimal("22.000"), fornId2);
 			MateriaPrima mpCacau = materiaPrimaService.createMateriaPrima("Cacau em Pó", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("10.000"), new BigDecimal("5.800"), fornId2);
-
+*/
 			// Movimentos Stock MP
 				// Entradas
-			MovimentoStockMP m1 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de leite");
+			/*MovimentoStockMP m1 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de leite");
 			MovimentoStockMP m2 = movimentoStockMPService.registarMovimento(userId3, mpAcucar.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de açúcar");
 			MovimentoStockMP m3 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial leite em pó");
 			MovimentoStockMP m4 = movimentoStockMPService.registarMovimento(userId3, mpFermento.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial fermento");
@@ -145,12 +202,12 @@ public class GestaoIogurtesApplication {
 			MovimentoStockMP m8 = movimentoStockMPService.registarMovimento(userId3, mpFramboesa.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial polpa framboesa");
 			MovimentoStockMP m9 = movimentoStockMPService.registarMovimento(userId4, mpBaunilha.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial extrato baunilha");
 			MovimentoStockMP m10 = movimentoStockMPService.registarMovimento(userId3, mpCacau.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial cacau");
-
+*/
 			// Saídas
 			//MovimentoStockMP m11 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("100.000"), "Saída para produção");
 			//MovimentoStockMP m12 = movimentoStockMPService.registarMovimento(userId4, mpAcucar.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("20.000"), "Saída para produção");
 			//MovimentoStockMP m13 = movimentoStockMPService.registarMovimento(userId4, mpLeitePo.getId(), TipoMovimentoMP.SAIDA, new BigDecimal("5.000"), "Saída para produção");
-
+/*
 			// Produtos Finais
 			ProdutoFinal pNatural = produtoFinalService.createProduto(
 					"YOG-NAT-125",
@@ -172,9 +229,9 @@ public class GestaoIogurtesApplication {
 			ProdutoFinal pChocolate = produtoFinalService.createProduto("YOG-CHO-125", "Iogurte de Chocolate", null, 21, new BigDecimal("0.45"), new BigDecimal("3.60"), 1, List.of(new ProdutoMateria(mpLeite, new BigDecimal("0.0950")), new ProdutoMateria(mpLeitePo, new BigDecimal("0.0300")), new ProdutoMateria(mpFermento, new BigDecimal("0.0008")), new ProdutoMateria(mpCacau, new BigDecimal("0.0080")), new ProdutoMateria(mpAcucar, new BigDecimal("0.0100")), new ProdutoMateria(mpEmbalagem, new BigDecimal("1"))));
 
 			UUID ProdutoFinalId1 = pNatural != null ? pNatural.getId() : null;
-			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;
+			UUID ProdutoFinalId2 = pMorango != null ? pMorango.getId() : null;*/
 
-			OrdemProducao ordem1 = ordemProducaoService.createOrdem(
+			/*OrdemProducao ordem1 = ordemProducaoService.createOrdem(
 					userId1, LocalDateTime.of(2026, 3, 26, 16, 5), LocalDateTime.of(2026, 3, 26, 16, 6), "observação",
 					List.of(
 							new OrdemProducaoProduto(null, ProdutoFinalId1, new BigDecimal("100.000")),
@@ -203,12 +260,12 @@ public class GestaoIogurtesApplication {
 							new EncomendaPallet(ProdutoFinalId1, palletId3, 2, new BigDecimal("150.00")),
 							new EncomendaPallet(ProdutoFinalId2, palletId3, 1, new BigDecimal("200.00"))
 					)
-			);
+			);*/
 
 			// ============================================
 			// TESTES DE DELETE
 			// ============================================
-			encomendaService.delete(encomenda1.getId());
+			/*encomendaService.delete(encomenda1.getId());
 			ordemProducaoService.delete(ordem2.getId());
 			produtoFinalService.delete(pChocolate.getId());
 			materiaPrimaService.delete(mpBaunilha.getId());
@@ -254,8 +311,7 @@ public class GestaoIogurtesApplication {
 			System.out.println("\n========== LISTAGEM DE EMPRESAS ==========");
 			empresaService.getAll().forEach(System.out::println);
 
-			System.out.println("\n========== LISTAGEM DE USERS ==========");
-			userService.getAll().forEach(System.out::println);
+
 
 			System.out.println("\n========== LISTAGEM DE FORNECEDORES ==========");
 			fornecedorService.getAll().forEach(System.out::println);
@@ -268,7 +324,7 @@ public class GestaoIogurtesApplication {
 
 			System.out.println("\n========== LISTAGEM DE PRODUTOS FINAIS ==========");
 			produtoFinalService.getAll().forEach(System.out::println);
-
+*/
 			//produtoFinalService.getMateriasByProdutoId(ProdutoFinalId1)
 			//		.forEach(System.out::println);
 		};
