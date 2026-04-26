@@ -3,7 +3,6 @@ package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import org.springframework.stereotype.Component;
@@ -39,14 +38,17 @@ public class MovimentoStockMPValidator {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User não encontrado!"));
 
-        boolean temPermissao = user.getRoles().stream()
+      /*  boolean temPermissao = user.getRoles().stream()
                 .anyMatch(r -> r.getRole() == UserRoleType.FUNCIONARIO
                         || r.getRole() == UserRoleType.ADMIN);
 
         if (!temPermissao) {
             throw new IllegalArgumentException("Apenas FUNCIONARIO ou ADMIN podem registar movimentos!");
         }
+        */
     }
+
+
 
     private void validarMateria(UUID materiaId) {
         if (materiaId == null) {

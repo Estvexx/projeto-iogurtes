@@ -1,84 +1,123 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaException;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.EmpresaValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class EmpresaService {
 
     private final EmpresaRepository empresaRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
     private final EmpresaValidator empresaValidator;
 
     public EmpresaService(EmpresaRepository empresaRepository,
                           UserRepository userRepository,
-                          UserService userService,
                           EmpresaValidator empresaValidator) {
         this.empresaRepository = empresaRepository;
         this.userRepository = userRepository;
-        this.userService = userService;
         this.empresaValidator = empresaValidator;
     }
 
+
     @Transactional
-    public Empresa createEmpresa(String nomeEmpresa, String nipc, String telefone,
-                                String morada, String codigoPostal, String cidade) {
+    public EmpresaResponse createEmpresa(CreateEmpresaRequest request) {
+        ValidatedEmpresa info = empresaValidator.validateCreateEmpresa(request);
 
-        empresaValidator.validateCreateEmpresa(nomeEmpresa, nipc, morada, codigoPostal, cidade);
-        String telefoneNormalizado = empresaValidator.validarTelefone(telefone);
-
-        Empresa empresa = new Empresa(nomeEmpresa, nipc, telefoneNormalizado, morada, codigoPostal, cidade);
-        return empresaRepository.save(empresa);
+        try {
+            Empresa empresa = new Empresa(
+                    info.nomeEmpresa(),
+                    info.nipc(),
+                    info.telefone(),
+                    info.morada(),
+                    info.codigoPostal(),
+                    info.cidade()
+            );
+            return toResponse(empresaRepository.save(empresa));
+        } catch (Exception e) {
+            throw new EmpresaException(EmpresaErrorCode.EMPRESA_CREATE_FAILED);
+        }
     }
 
-    public Empresa getById(UUID id) {
+    public EmpresaResponse findById(UUID id) {
         return empresaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada!"));
+                .map(this::toResponse)
+                .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
     }
 
-    public List<Empresa> getAll() {
-        return empresaRepository.findAllByIsActiveTrue();
+    public List<EmpresaResponse> findAll() {
+        return empresaRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public List<Empresa> getAllIncludingInactive() {
-        return empresaRepository.findAll();
+    public List<EmpresaResponse> findAllActive() {
+        return empresaRepository.findAllByIsActiveTrue()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<EmpresaResponse> findAllInactive() {
+        return empresaRepository.findAllByIsActiveFalse()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+
+    @Transactional
+    public EmpresaResponse updateEmpresa(UUID id, UpdateEmpresaRequest request) {
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
+
+        ValidatedUpdateEmpresa info = empresaValidator.validateUpdateEmpresa(id, request);
+
+        try {
+            empresa.setNomeEmpresa(info.nomeEmpresa());
+            empresa.setTelefone(info.telefone());
+            empresa.setMorada(info.morada());
+            empresa.setCodigoPostal(info.codigoPostal());
+            empresa.setCidade(info.cidade());
+            return toResponse(empresaRepository.save(empresa));
+        } catch (Exception e) {
+            throw new EmpresaException(EmpresaErrorCode.EMPRESA_UPDATE_FAILED);
+        }
     }
 
     @Transactional
-    public Empresa update(UUID id, String nomeEmpresa, String nipc, String telefone,
-                          String morada, String codigoPostal, String cidade) {
+    public void softDelete(UUID id) {
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
 
-        empresaValidator.validateUpdateEmpresa(id, nomeEmpresa, nipc, morada, codigoPostal, cidade);
-        String telefoneNormalizado = empresaValidator.validarTelefone(telefone);
-
-        Empresa empresa = getById(id);
-        empresa.setNomeEmpresa(nomeEmpresa);
-        empresa.setNipc(nipc);
-        empresa.setTelefone(telefoneNormalizado);
-        empresa.setMorada(morada);
-        empresa.setCodigoPostal(codigoPostal);
-        empresa.setCidade(cidade);
-
-        return empresaRepository.save(empresa);
-    }
-
-    @Transactional
-    public void delete(UUID id) {
-        // Coloquei o get para simplesmente nao poder dar delete a algo que não existe
-        Empresa empresa = getById(id);
-
-        userRepository.findByEmpresaId(id)
-                .forEach(user -> userService.delete(user.getId()));
+        if (userRepository.existsByEmpresa_IdAndIsActiveTrue(id)) {
+            throw new EmpresaException(EmpresaErrorCode.EMPRESA_HAS_CLIENTES);
+        }
 
         empresa.softDelete();
         empresaRepository.save(empresa);
+    }
+
+    private EmpresaResponse toResponse(Empresa empresa) {
+        return new EmpresaResponse(
+                empresa.getId(),
+                empresa.getNomeEmpresa(),
+                empresa.getNipc(),
+                empresa.getTelefone(),
+                empresa.getMorada(),
+                empresa.getCodigoPostal(),
+                empresa.getCidade(),
+                empresa.getCreatedAt()
+        );
     }
 }

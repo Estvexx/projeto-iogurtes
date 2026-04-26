@@ -1,8 +1,12 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.utils.PhoneUtils;
 import org.springframework.stereotype.Component;
+
 import java.util.UUID;
 
 @Component
@@ -14,113 +18,86 @@ public class EmpresaValidator {
         this.empresaRepository = empresaRepository;
     }
 
-    public void validateCreateEmpresa(String nomeEmpresa,
-                                      String nipc,
-                                      String morada,
-                                      String codigoPostal,
-                                      String cidade) {
+    public ValidatedEmpresa validateCreateEmpresa(CreateEmpresaRequest request) {
+        validarNomeEmpresa(request.nomeEmpresa());
+        validarNipc(request.nipc(), null);
+        String telefone = validarTelefone(request.telefone());
+        validarMorada(request.morada());
+        validarCodigoPostal(request.codigoPostal());
+        validarCidade(request.cidade());
 
-        validarNomeEmpresa(nomeEmpresa);
-        validarNipc(nipc);
-        validarMorada(morada);
-        validarCodigoPostal(codigoPostal);
-        validarCidade(cidade);
+        return new ValidatedEmpresa(
+                request.nomeEmpresa(),
+                request.nipc(),
+                telefone,
+                request.morada(),
+                request.codigoPostal(),
+                request.cidade()
+        );
     }
 
-    public void validateUpdateEmpresa(UUID id,
-                                      String nomeEmpresa,
-                                      String nipc,
-                                      String morada,
-                                      String codigoPostal,
-                                      String cidade) {
+    public ValidatedUpdateEmpresa validateUpdateEmpresa(UUID id, UpdateEmpresaRequest request) {
+        validarNomeEmpresa(request.nomeEmpresa());
+        validarNipc(request.nipc(), id);
+        String telefone = validarTelefone(request.telefone());
+        validarMorada(request.morada());
+        validarCodigoPostal(request.codigoPostal());
+        validarCidade(request.cidade());
 
-        validarNomeEmpresa(nomeEmpresa);
-        validarNipcUpdate(id, nipc);
-        validarMorada(morada);
-        validarCodigoPostal(codigoPostal);
-        validarCidade(cidade);
+        return new ValidatedUpdateEmpresa(
+                request.nomeEmpresa(),
+                request.nipc(),
+                telefone,
+                request.morada(),
+                request.codigoPostal(),
+                request.cidade()
+        );
     }
+
 
     private void validarNomeEmpresa(String nomeEmpresa) {
-        if (nomeEmpresa == null || nomeEmpresa.isBlank()) {
-            throw new IllegalArgumentException("Nome da empresa é obrigatório");
-        }
-        if (nomeEmpresa.length() < 3 || nomeEmpresa.length() > 60) {
-            throw new IllegalArgumentException("Nome da empresa deve ter entre 3 e 60 caracteres");
+        if (nomeEmpresa == null || nomeEmpresa.isBlank())
+            throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_NULL);
+        if (nomeEmpresa.length() < 3)
+            throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_SHORT);
+        if (nomeEmpresa.length() > 150)
+            throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_LONG);
+    }
+
+    private void validarNipc(String nipc, UUID id) {
+        if (nipc == null || nipc.isBlank())
+            throw new ValidationException(ValidationErrorCode.NIPC_NULL);
+        if (!nipc.matches("^\\d{9}$"))
+            throw new ValidationException(ValidationErrorCode.NIPC_INVALID);
+        // NULL para create, !NULL para update
+        if(id != null){
+            if (empresaRepository.existsByNipcAndIdNot(nipc, id))
+                throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
+        } else {
+            if (empresaRepository.existsByNipc(nipc))
+                throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
         }
     }
 
-    private void validarNipc(String nipc) {
-        if (nipc == null || nipc.isBlank()) {
-            throw new IllegalArgumentException("NIPC é obrigatório");
-        }
-
-        if (!nipc.matches("^\\d{9}$")) {
-            throw new IllegalArgumentException("NIPC deve conter exatamente 9 dígitos numéricos");
-        }
-        if (empresaRepository.existsByNipc(nipc)) {
-            throw new IllegalArgumentException("Já existe uma empresa com este NIPC");
-        }
-    }
-
-    public String validarTelefone(String telefone) {
+    private String validarTelefone(String telefone) {
         return PhoneUtils.validarENormalizar(telefone);
     }
 
     private void validarMorada(String morada) {
-        if (morada == null || morada.isBlank()) {
-            return; // opcional
-        }
-
-        if (morada.length() > 200) {
-            throw new IllegalArgumentException("Morada não pode exceder 200 caracteres");
-        }
-
-        // evita lixo como alguns simbolos aleatorios desnecessarios
-        if (!morada.matches("^[\\p{L}0-9 .,\\-º/]+$")) {
-            throw new IllegalArgumentException("Morada contém caracteres inválidos");
-        }
+        if (morada == null || morada.isBlank()) return;
+        if (morada.length() > 200)
+            throw new ValidationException(ValidationErrorCode.MORADA_TOO_LONG);
     }
 
     private void validarCodigoPostal(String codigoPostal) {
-        if (codigoPostal == null || codigoPostal.isBlank()) {
-            return;
-        }
-        if (!codigoPostal.matches("^\\d{4}-\\d{3}$")) {
-            throw new IllegalArgumentException(
-                    "Código postal inválido. Formato: 1234-567"
-            );
-        }
+        if (codigoPostal == null || codigoPostal.isBlank()) return;
+        if (!codigoPostal.matches("^\\d{4}-\\d{3}$"))
+            throw new ValidationException(ValidationErrorCode.CODIGO_POSTAL_INVALID);
     }
 
     private void validarCidade(String cidade) {
-        if (cidade == null || cidade.isBlank()) {
-            return; // opcional
-        }
-
-        if (cidade.length() > 100) {
-            throw new IllegalArgumentException("Cidade não pode exceder 100 caracteres");
-        }
-
-        // permite letras, espaços e alguns caracteres comuns
-        if (!cidade.matches("^[\\p{L} .'-]+$")) {
-            throw new IllegalArgumentException("Cidade contém caracteres inválidos");
-        }
-    }
-
-    // Validação para o update
-    private void validarNipcUpdate(UUID id, String nipc) {
-
-        if (nipc == null || nipc.isBlank()) {
-            throw new IllegalArgumentException("NIPC é obrigatório");
-        }
-
-        if (!nipc.matches("^\\d{9}$")) {
-            throw new IllegalArgumentException("NIPC deve conter exatamente 9 dígitos numéricos");
-        }
-
-        if (empresaRepository.existsByNipcAndIdNot(nipc, id)) {
-            throw new IllegalArgumentException("Já existe outra empresa com este NIPC");
-        }
+        if (cidade == null || cidade.isBlank()) return;
+        if (cidade.length() > 100)
+            throw new ValidationException(ValidationErrorCode.CIDADE_TOO_LONG);
     }
 }
