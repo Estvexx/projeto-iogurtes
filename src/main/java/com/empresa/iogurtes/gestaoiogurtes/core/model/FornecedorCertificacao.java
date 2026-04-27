@@ -20,40 +20,40 @@ public class FornecedorCertificacao extends BaseEntity {
     @Column(name = "descricao", length = 120)
     private String descricao;
 
-    @Column(name = "validade")
-    private LocalDate validade;
+    @Column(name = "data_validade")
+    private LocalDate data_validade;
 
     public FornecedorCertificacao() {}
 
-    public FornecedorCertificacao(TipoCertificacao tipo, String descricao, LocalDate validade) {
+    public FornecedorCertificacao(TipoCertificacao tipo, String descricao, LocalDate data_validade) {
         this.tipo = tipo;
         this.descricao = descricao;
-        this.validade = validade;
+        this.data_validade = data_validade;
     }
     public FornecedorCertificacao(Fornecedor fornecedor, TipoCertificacao tipo,
-                                  String descricao, LocalDate validade) {
+                                  String descricao, LocalDate data_validade) {
         this.fornecedor = fornecedor;
         this.tipo = tipo;
         this.descricao = descricao;
-        this.validade = validade;
+        this.data_validade = data_validade;
     }
 
     public Fornecedor getFornecedor() { return fornecedor; }
     public TipoCertificacao getTipo() { return tipo; }
     public String getDescricao() { return descricao; }
-    public LocalDate getValidade() { return validade; }
+    public LocalDate getValidade() { return data_validade; }
 
     public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
     public void setTipo(TipoCertificacao tipo) { this.tipo = tipo; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
-    public void setValidade(LocalDate validade) { this.validade = validade; }
+    public void setValidade(LocalDate data_validade) { this.data_validade = data_validade; }
 
     @Override
     public String toString() {
         return "FornecedorCertificacao{" +
                 "id=" + getId() +
                 ", tipo=" + tipo +
-                ", validade=" + validade +
+                ", data_validade=" + data_validade +
                 '}';
     }
 }

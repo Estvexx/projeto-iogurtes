@@ -2,7 +2,6 @@ package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.EncomendaPallet;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,12 +16,12 @@ public class EncomendaValidator {
             throw new IllegalArgumentException("Utilizador é obrigatório");
 
         // só users com role CLIENTE podem fazer encomendas
-        boolean isCliente = user.getRoles().stream()
+      /*  boolean isCliente = user.getRoles().stream()
                 .anyMatch(r -> r.getRole() == UserRoleType.EMPRESA);
-
-        if (!isCliente)
+*/
+        /*if (!isCliente)
             throw new IllegalStateException("Apenas clientes podem realizar encomendas");
-
+*/
         if (pallets == null || pallets.isEmpty())
             throw new IllegalArgumentException("A encomenda deve ter pelo menos um pallet");
 

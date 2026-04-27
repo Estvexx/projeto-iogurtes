@@ -60,8 +60,32 @@ public class FornecedorValidator {
     }
 
     private void validarMorada(String morada) {
-        if (morada != null && morada.length() > 200) {
-            throw new IllegalArgumentException("Morada não pode ter mais de 200 caracteres");
+        if (morada == null || morada.isBlank()) {
+            return; // opcional
+        }
+
+        if (morada.length() > 200) {
+            throw new IllegalArgumentException("Morada não pode exceder 200 caracteres");
+        }
+
+        // evita lixo como alguns simbolos aleatorios desnecessarios
+        if (!morada.matches("^[\\p{L}0-9 .,\\-º/]+$")) {
+            throw new IllegalArgumentException("Morada contém caracteres inválidos");
+        }
+    }
+
+    private void validarCidade(String cidade) {
+        if (cidade == null || cidade.isBlank()) {
+            return; // opcional
+        }
+
+        if (cidade.length() > 100) {
+            throw new IllegalArgumentException("Cidade não pode exceder 100 caracteres");
+        }
+
+        // permite letras, espaços e alguns caracteres comuns
+        if (!cidade.matches("^[\\p{L} .'-]+$")) {
+            throw new IllegalArgumentException("Cidade contém caracteres inválidos");
         }
     }
 

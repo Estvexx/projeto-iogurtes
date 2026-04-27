@@ -1,17 +1,17 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
+import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.ports.PasswordHasher;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 public class UserService {
@@ -19,170 +19,220 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserValidator userValidator;
     private final PasswordHasher passwordHasher;
-    private final EmpresaRepository empresaRepository;
-    private final EncomendaRepository encomendaRepository;
-    private final EncomendaPalletRepository encomendaPalletRepository;
-    private final EncomendaOrdemRepository encomendaOrdemRepository;
-    private final OrdemProducaoRepository ordemProducaoRepository;
-    private final MovimentoStockMPRepository movimentoStockMPRepository;
 
     public UserService(UserRepository userRepository,
                        UserValidator userValidator,
-                       PasswordHasher passwordHasher,
-                       EmpresaRepository empresaRepository,
-                       EncomendaRepository encomendaRepository,
-                       EncomendaPalletRepository encomendaPalletRepository,
-                       EncomendaOrdemRepository encomendaOrdemRepository,
-                       OrdemProducaoRepository ordemProducaoRepository,
-                       MovimentoStockMPRepository movimentoStockMPRepository) {
+                       PasswordHasher passwordHasher) {
         this.userRepository = userRepository;
         this.userValidator = userValidator;
         this.passwordHasher = passwordHasher;
-        this.empresaRepository = empresaRepository;
-        this.encomendaRepository = encomendaRepository;
-        this.encomendaPalletRepository = encomendaPalletRepository;
-        this.encomendaOrdemRepository = encomendaOrdemRepository;
-        this.ordemProducaoRepository = ordemProducaoRepository;
-        this.movimentoStockMPRepository = movimentoStockMPRepository;
     }
 
     @Transactional
-    public User createUser(String nome,
-                           String email,
-                           String password,
-                           String turno,
-                           LocalDate dataAdmissao,
-                           List<String> roles,
-                           UUID empresaId
-                            ) {
+    public UserResponse createFuncionario(CreateFuncionarioRequest request) {
+        ValidatedFuncionario info = userValidator.validateCreateFuncionario(request);
 
-        TurnoTipo turnoTipo = userValidator.validateAndParseTurno(turno);
-        List<UserRole> userRoles = userValidator.validateAndParseRoles(roles);
-
-        userValidator.validateCreateUser(nome, email,password, turnoTipo, dataAdmissao, userRoles, empresaId);
-
-        String passwordHash = passwordHasher.hash(password);
-        // o getReferenceById é só para passar como objeto empresa o uuid, assim nao retorno o objeto inteiro, evito queries
-        Empresa empresa = empresaId != null ? empresaRepository.getReferenceById(empresaId) : null;
-
-        User user = new User(
-                empresa,
-                nome,
-                email,
-                passwordHash,
-                turnoTipo,
-                dataAdmissao
-        );
-
-        for (UserRole role : userRoles) {
-            role.setUser(user);
+        try {
+            String passwordHash = passwordHasher.hash(info.password());
+            User user = new User(null, info.nome(), info.email(), passwordHash, info.turno(), info.dataAdmissao());
+            user.setRole(info.role());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_CREATE_FAILED);
         }
-
-        user.setRoles(userRoles);
-
-        return userRepository.save(user);
     }
 
     @Transactional
-    public User updateUser(UUID id, String nome, String turno, List<String> roles) {
+    public UserResponse createCliente(CreateClienteRequest request) {
+        ValidatedCliente info = userValidator.validateCreateCliente(request);
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
-
-        TurnoTipo turnoTipo = userValidator.validateAndParseTurno(turno);
-        List<UserRole> userRoles = userValidator.validateAndParseRoles(roles);
-        userValidator.validateUpdateUser(nome, turnoTipo, userRoles);
-
-        user.getRoles().clear();
-        userRepository.flush();
-
-        for (UserRole role : userRoles) {
-            role.setUser(user);
-            user.getRoles().add(role);
+        try {
+            String passwordHash = passwordHasher.hash(info.password());
+            User user = new User(info.empresa(), info.nome(), info.email(),
+                    passwordHash, null, null);
+            user.setRole(info.role());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new ClienteException(ClienteErrorCode.CLIENTE_CREATE_FAILED);
         }
-
-        user.setNome(nome);
-        user.setTurno(turnoTipo);
-
-        return userRepository.save(user);
     }
 
-    public User getById(UUID id) {
+    @Transactional
+    public UserResponse createAdmin(CreateAdminRequest request) {
+        ValidatedAdmin info = userValidator.validateCreateAdmin(request);
+
+        try {
+            String passwordHash = passwordHasher.hash(info.password());
+            User user = new User(null, info.nome(), info.email(),
+                    passwordHash, null, null);
+            user.setRole(info.role());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new AdminException(AdminErrorCode.ADMIN_CREATE_FAILED);
+        }
+    }
+
+    @Transactional
+    public UserResponse createGestor(CreateGestorRequest request) {
+        ValidatedGestor info = userValidator.validateCreateGestor(request);
+
+        try {
+            String passwordHash = passwordHasher.hash(info.password());
+            User user = new User(null, info.nome(), info.email(),
+                    passwordHash, null, info.dataAdmissao());
+            user.setRole(info.role());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new GestorException(GestorErrorCode.GESTOR_CREATE_FAILED);
+        }
+    }
+
+    public UserResponse findById(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+                .map(this::toResponse)
+                .orElseThrow(() -> new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_NOT_FOUND));
     }
 
-    public List<User> getAll() {
-        return userRepository.findAllByIsActiveTrue();
+    public List<UserResponse> findAllFuncionarios() {
+        return userRepository.findAllByRole_RoleInAndIsActiveTrue(List.of(UserRoleType.FUNCIONARIO_MP, UserRoleType.FUNCIONARIO_OP))
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public List<User> getAllIncludingInactive() {
-        return userRepository.findAll();
+    public List<UserResponse> findAllFuncionarios_MP() {
+        return userRepository.findAllByRole_RoleAndIsActiveTrue(UserRoleType.FUNCIONARIO_MP)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllFuncionarios_OP() {
+        return userRepository.findAllByRole_RoleAndIsActiveTrue(UserRoleType.FUNCIONARIO_OP)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllClientes() {
+        return userRepository.findAllByRole_RoleAndIsActiveTrue(UserRoleType.CLIENTE)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllAdmins() {
+        return userRepository.findAllByRole_RoleAndIsActiveTrue(UserRoleType.ADMIN)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllGestores() {
+        return userRepository.findAllByRole_RoleAndIsActiveTrue(UserRoleType.GESTOR)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllActive() {
+        return userRepository.findAllByIsActiveTrue()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public List<UserResponse> findAllInactive() {
+        return userRepository.findAllByIsActiveFalse()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
-    public void changePassword(UUID id, String newPassword) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+    public UserResponse updateFuncionario(UUID id, UpdateFuncionarioRequest request) {
+        User user = userRepository.findByIdAndRole_Role(id, UserRoleType.FUNCIONARIO_MP)
+                .orElseThrow(() -> new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_NOT_FOUND));
 
-        if (!user.isActive()) {
-            throw new IllegalArgumentException("Utilizador inativo");
+        ValidatedUpdateFuncionario info = userValidator.validateUpdateFuncionario(request);
+
+        try {
+            user.setNome(info.nome());
+            user.setTurno(info.turno());
+            user.setDataAdmissao(info.dataAdmissao());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_UPDATE_FAILED);
         }
-        
-        userValidator.validatePasswordForChange(newPassword);
-
-        if (passwordHasher.matches(newPassword, user.getPasswordHash())) {
-            throw new IllegalArgumentException("A nova password deve ser diferente da atual");
-        }
-
-        user.setPasswordHash(passwordHasher.hash(newPassword));
-        userRepository.save(user);
     }
 
     @Transactional
-    public void delete(UUID id) {
+    public UserResponse updateCliente(UUID id, UpdateClienteRequest request) {
+        User user = userRepository.findByIdAndRole_Role(id, UserRoleType.CLIENTE)
+                .orElseThrow(() -> new ClienteException(ClienteErrorCode.CLIENTE_NOT_FOUND));
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+        ValidatedUpdateCliente info = userValidator.validateUpdateCliente(request);
 
-        ordemProducaoRepository.findByUserId(id)
-                .forEach(ordem -> {
-                    ordem.getProdutos().forEach(produto -> produto.softDelete());
-                    ordem.getConsumos().forEach(consumo -> consumo.softDelete());
-                    encomendaOrdemRepository.findByOrdemId(ordem.getId())
-                            .forEach(eo -> {
-                                eo.softDelete();
-                                encomendaOrdemRepository.save(eo);
-                            });
-                    ordem.softDelete();
-                    ordemProducaoRepository.save(ordem);
-                });
-
-        encomendaRepository.findByUserId(id)
-                .forEach(encomenda -> {
-                    for (EncomendaPallet pallet : encomenda.getPallets()) {
-                        for (EncomendaOrdem encomendaOrdem : pallet.getOrdens()) {
-                            encomendaOrdem.softDelete();
-                            encomendaOrdemRepository.save(encomendaOrdem);
-                        }
-                        pallet.softDelete();
-                        encomendaPalletRepository.save(pallet);
-                    }
-                    encomenda.softDelete();
-                    encomendaRepository.save(encomenda);
-                });
-
-        movimentoStockMPRepository.findByUserId(id)
-                .forEach(movimento -> {
-                    movimento.softDelete();
-                    movimentoStockMPRepository.save(movimento);
-                });
-
-        for (UserRole role : user.getRoles()) {
-            role.softDelete();
+        try {
+            user.setNome(info.nome());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new ClienteException(ClienteErrorCode.CLIENTE_UPDATE_FAILED);
         }
+    }
 
+    @Transactional
+    public UserResponse updateAdmin(UUID id, UpdateAdminRequest request) {
+        User user = userRepository.findByIdAndRole_Role(id, UserRoleType.ADMIN)
+                .orElseThrow(() -> new AdminException(AdminErrorCode.ADMIN_NOT_FOUND));
+
+        ValidatedUpdateAdmin info = userValidator.validateUpdateAdmin(request);
+
+        try {
+            user.setNome(info.nome());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new AdminException(AdminErrorCode.ADMIN_UPDATE_FAILED);
+        }
+    }
+
+    @Transactional
+    public UserResponse updateGestor(UUID id, UpdateGestorRequest request) {
+        User user = userRepository.findByIdAndRole_Role(id, UserRoleType.GESTOR)
+                .orElseThrow(() -> new GestorException(GestorErrorCode.GESTOR_NOT_FOUND));
+
+        ValidatedUpdateGestor info = userValidator.validateUpdateGestor(request);
+
+        try {
+            user.setNome(info.nome());
+            user.setDataAdmissao(info.dataAdmissao());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new GestorException(GestorErrorCode.GESTOR_UPDATE_FAILED);
+        }
+    }
+
+    @Transactional
+    public void softDelete(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_NOT_FOUND));
         user.softDelete();
         userRepository.save(user);
+    }
+
+    // ________________________________________________________________________________________________________
+    // Finalizar soft deletes para os restantes tipos de utilizadores
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getNome(),
+                user.getEmail(),
+                user.getTurno(),
+                user.getEmpresa() != null ? user.getEmpresa().getId() : null,
+                user.getDataAdmissao(),
+                user.getRole().getRole(),
+                user.getCreatedAt()
+        );
     }
 }
