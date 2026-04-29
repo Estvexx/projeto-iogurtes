@@ -2,11 +2,15 @@ package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.ports.PasswordHasher;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.UserValidator;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +21,46 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final EmpresaRepository empresaRepository;
     private final UserValidator userValidator;
     private final PasswordHasher passwordHasher;
 
     public UserService(UserRepository userRepository,
+                       EmpresaRepository empresaRepository,
                        UserValidator userValidator,
+                       UserRoleRepository userRoleRepository,
                        PasswordHasher passwordHasher) {
         this.userRepository = userRepository;
+        this.userRoleRepository = userRoleRepository;
+        this.empresaRepository = empresaRepository;
         this.userValidator = userValidator;
         this.passwordHasher = passwordHasher;
     }
 
     @Transactional
-    public UserResponse createFuncionario(CreateFuncionarioRequest request) {
-        ValidatedFuncionario info = userValidator.validateCreateFuncionario(request);
+    public UserResponse createFuncionarioMP(CreateFuncionarioRequest request) {
+        UserRole role = userRoleRepository.findByRole(UserRoleType.FUNCIONARIO_MP)
+                .orElseThrow(() -> new FuncionarioException(FuncionarioErrorCode.INVALID_ROLE));
+
+        ValidatedFuncionario info = userValidator.validateCreateFuncionarioMP(request, role);
+
+        try {
+            String passwordHash = passwordHasher.hash(info.password());
+            User user = new User(null, info.nome(), info.email(), passwordHash, info.turno(), info.dataAdmissao());
+            user.setRole(info.role());
+            return toResponse(userRepository.save(user));
+        } catch (Exception e) {
+            throw new FuncionarioException(FuncionarioErrorCode.FUNCIONARIO_CREATE_FAILED);
+        }
+    }
+
+    @Transactional
+    public UserResponse createFuncionarioOP(CreateFuncionarioRequest request) {
+        UserRole role = userRoleRepository.findByRole(UserRoleType.FUNCIONARIO_OP)
+                .orElseThrow(() -> new FuncionarioException(FuncionarioErrorCode.INVALID_ROLE));
+
+        ValidatedFuncionario info = userValidator.validateCreateFuncionarioOP(request, role);
 
         try {
             String passwordHash = passwordHasher.hash(info.password());
@@ -44,22 +74,30 @@ public class UserService {
 
     @Transactional
     public UserResponse createCliente(CreateClienteRequest request) {
-        ValidatedCliente info = userValidator.validateCreateCliente(request);
+            UserRole role = userRoleRepository.findByRole(UserRoleType.CLIENTE)
+                .orElseThrow(() -> new ClienteException(ClienteErrorCode.INVALID_ROLE));
 
-        try {
-            String passwordHash = passwordHasher.hash(info.password());
-            User user = new User(info.empresa(), info.nome(), info.email(),
-                    passwordHash, null, null);
-            user.setRole(info.role());
-            return toResponse(userRepository.save(user));
-        } catch (Exception e) {
-            throw new ClienteException(ClienteErrorCode.CLIENTE_CREATE_FAILED);
-        }
+            Empresa empresa = empresaRepository.findById(request.empresaId())
+                .orElseThrow(() -> new ClienteException(ClienteErrorCode.EMPRESA_NOT_FOUND));
+
+            ValidatedCliente info = userValidator.validateCreateCliente(request, role);
+
+            try {
+                String passwordHash = passwordHasher.hash(info.password());
+                User user = new User(info.empresa(), info.nome(), info.email(),
+                        passwordHash, null, null);
+                user.setRole(info.role());
+                return toResponse(userRepository.save(user));
+            } catch (Exception e) {
+                throw new ClienteException(ClienteErrorCode.CLIENTE_CREATE_FAILED);
+            }
     }
 
     @Transactional
     public UserResponse createAdmin(CreateAdminRequest request) {
-        ValidatedAdmin info = userValidator.validateCreateAdmin(request);
+        UserRole role = userRoleRepository.findByRole(UserRoleType.ADMIN)
+                .orElseThrow(() -> new AdminException(AdminErrorCode.INVALID_ROLE));
+        ValidatedAdmin info = userValidator.validateCreateAdmin(request, role);
 
         try {
             String passwordHash = passwordHasher.hash(info.password());
@@ -74,7 +112,9 @@ public class UserService {
 
     @Transactional
     public UserResponse createGestor(CreateGestorRequest request) {
-        ValidatedGestor info = userValidator.validateCreateGestor(request);
+        UserRole role = userRoleRepository.findByRole(UserRoleType.GESTOR)
+                .orElseThrow(() -> new GestorException(GestorErrorCode.INVALID_ROLE));
+        ValidatedGestor info = userValidator.validateCreateGestor(request, role);
 
         try {
             String passwordHash = passwordHasher.hash(info.password());

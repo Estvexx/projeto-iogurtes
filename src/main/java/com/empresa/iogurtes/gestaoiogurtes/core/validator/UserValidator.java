@@ -6,7 +6,6 @@ import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationEx
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
@@ -29,7 +28,7 @@ public class UserValidator {
         this.userRoleRepository = userRoleRepository;
     }
 
-    public ValidatedFuncionario validateCreateFuncionario(CreateFuncionarioRequest info) {
+    public ValidatedFuncionario validateCreateFuncionarioMP(CreateFuncionarioRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
@@ -38,13 +37,24 @@ public class UserValidator {
         TurnoTipo turno = parseTurno(info.turno());
         if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
-        UserRole role = parseRole(info.role());
+        return new ValidatedFuncionario(info.nome(), info.email(), info.password(),
+                turno, role, info.dataAdmissao());
+    }
+
+    public ValidatedFuncionario validateCreateFuncionarioOP(CreateFuncionarioRequest info, UserRole role) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
+        validarDataAdmissao(info.dataAdmissao());
+
+        TurnoTipo turno = parseTurno(info.turno());
+        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
         return new ValidatedFuncionario(info.nome(), info.email(), info.password(),
                 turno, role, info.dataAdmissao());
     }
 
-    public ValidatedCliente validateCreateCliente(CreateClienteRequest info) {
+    public ValidatedCliente validateCreateCliente(CreateClienteRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
@@ -53,28 +63,22 @@ public class UserValidator {
         Empresa empresa = empresaRepository.findById(info.empresaId())
                 .orElseThrow(() -> new ValidationException(ValidationErrorCode.EMPRESA_NOT_FOUND));
 
-        UserRole role = parseRole(info.role());
-
         return new ValidatedCliente(info.nome(), info.email(), info.password(), role, empresa);
     }
 
-    public ValidatedAdmin validateCreateAdmin(CreateAdminRequest info) {
+    public ValidatedAdmin validateCreateAdmin(CreateAdminRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
-
-        UserRole role = parseRole(info.role());
 
         return new ValidatedAdmin(info.nome(), info.email(), info.password(), role);
     }
 
-    public ValidatedGestor validateCreateGestor(CreateGestorRequest info) {
+    public ValidatedGestor validateCreateGestor(CreateGestorRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
         validarDataAdmissao(info.dataAdmissao());
-
-        UserRole role = parseRole(info.role());
 
         return new ValidatedGestor(info.nome(), info.email(), info.password(),
                 role, info.dataAdmissao());
@@ -143,17 +147,6 @@ public class UserValidator {
             return TurnoTipo.valueOf(turno.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new ValidationException(ValidationErrorCode.TURNO_INVALID);
-        }
-    }
-
-    private UserRole parseRole(String role) {
-        if (role == null) throw new ValidationException(ValidationErrorCode.ROLE_NULL);
-        try {
-            UserRoleType roleType = UserRoleType.valueOf(role.toUpperCase());
-            return userRoleRepository.findByRole(roleType)
-                    .orElseThrow(() -> new ValidationException(ValidationErrorCode.ROLE_NOT_FOUND));
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException(ValidationErrorCode.ROLE_INVALID);
         }
     }
 }

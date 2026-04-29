@@ -7,6 +7,5 @@ public record CreateFuncionarioRequest(
         String email,
         String password,
         String turno,
-        String role,
         LocalDate dataAdmissao
 ) {}

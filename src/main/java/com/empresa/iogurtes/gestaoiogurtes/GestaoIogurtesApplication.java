@@ -49,15 +49,15 @@ public class GestaoIogurtesApplication {
 				}
 			}
 
-			userService.createAdmin(new CreateAdminRequest("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", "ADMIN"));
-			userService.createAdmin(new CreateAdminRequest("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", "ADMIN"));
-			userService.createAdmin(new CreateAdminRequest("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789", "ADMIN"));
-			userService.createGestor(new CreateGestorRequest("Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@123", "GESTOR", LocalDate.of(2022, 3, 15)));
-			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", "GESTOR", LocalDate.of(2021, 7, 20)));
-			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", "GESTOR", LocalDate.of(2023, 1, 10)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", "FUNCIONARIO_MP", LocalDate.of(2024, 3, 1)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", "FUNCIONARIO_OP", LocalDate.of(2023, 11, 15)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", "FUNCIONARIO_MP", LocalDate.of(2022, 6, 5)));
+			userService.createAdmin(new CreateAdminRequest("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123"));
+			userService.createAdmin(new CreateAdminRequest("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456"));
+			userService.createAdmin(new CreateAdminRequest("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789"));
+			userService.createGestor(new CreateGestorRequest("Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@123", LocalDate.of(2022, 3, 15)));
+			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", LocalDate.of(2021, 7, 20)));
+			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", LocalDate.of(2023, 1, 10)));
+			userService.createFuncionarioMP(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", LocalDate.of(2024, 3, 1)));
+			userService.createFuncionarioOP(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", LocalDate.of(2023, 11, 15)));
+			userService.createFuncionarioMP(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", LocalDate.of(2022, 6, 5)));
 
 			System.out.println("\n========== LISTAGEM DE USERS ==========");
 			userService.findAllActive().forEach(System.out::println);
@@ -85,7 +85,7 @@ public class GestaoIogurtesApplication {
 			EmpresaResponse e4 = empresaService.createEmpresa(new CreateEmpresaRequest("Açúcares & Mel Portugal", "507654321", "+351243987654", "Estrada Nacional 3, Km 145", "2000-123", "Santarém"));
 			EmpresaResponse e5 = empresaService.createEmpresa(new CreateEmpresaRequest("Cacau & Especiarias Gourmet", "506543210", "+351213456789", "Avenida da República, 88, Piso 3", "1050-012", "Lisboa"));
 
-			userService.createCliente(new CreateClienteRequest("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", "CLIENTE", e1.id()));
+			userService.createCliente(new CreateClienteRequest("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", e1.id()));
 
 			// Empresa para softdelete (sem clientes associados)
 			EmpresaResponse eApagar = empresaService.createEmpresa(new CreateEmpresaRequest("Empresa Para Apagar Lda", "500000001", "+351210000001", "Rua Temporária, 1", "1000-001", "Lisboa"));

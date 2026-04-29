@@ -6,6 +6,5 @@ public record CreateClienteRequest(
         String nome,
         String email,
         String password,
-        String role,
         UUID empresaId
 ) {}

@@ -6,6 +6,5 @@ public record CreateGestorRequest(
         String nome,
         String email,
         String password,
-        String role,
         LocalDate dataAdmissao
 ) {}

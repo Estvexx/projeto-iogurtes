@@ -8,9 +8,11 @@ public enum ClienteErrorCode {
     CLIENTE_UPDATE_FAILED("CLI_004", "Falha ao atualizar cliente"),
     CLIENTE_DELETE_FAILED("CLI_005", "Falha ao eliminar cliente"),
     EMPRESA_REQUIRED("CLI_006", "Clientes requerem uma empresa associada"),
+    EMPRESA_NOT_FOUND("CLI_010", "Empresa inexistente"),
     EMAIL_ALREADY_EXISTS("CLI_007", "Email já existe"),
     INVALID_PASSWORD("CLI_008", "Password inválida"),
     INVALID_ROLE("CLI_009", "Role inválida");
+
 
     private final String code;
     private final String message;
