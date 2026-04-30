@@ -1,11 +1,12 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
@@ -87,16 +88,18 @@ public class UserValidator {
     public ValidatedUpdateFuncionario validateUpdateFuncionario(UpdateFuncionarioRequest info) {
         validarNome(info.nome());
         validarDataAdmissao(info.dataAdmissao());
-
         TurnoTipo turno = parseTurno(info.turno());
-        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+        UserRoleType role = info.novaRole();
+        if (turno == null && (role == UserRoleType.FUNCIONARIO_MP
+                            || role == UserRoleType.FUNCIONARIO_OP
+                            || role == null )) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
-        return new ValidatedUpdateFuncionario(info.nome(), turno, info.dataAdmissao());
+        return new ValidatedUpdateFuncionario(info.nome(), turno, info.dataAdmissao(), info.novaRole());
     }
 
     public ValidatedUpdateCliente validateUpdateCliente(UpdateClienteRequest info) {
         validarNome(info.nome());
-        return new ValidatedUpdateCliente(info.nome());
+        return new ValidatedUpdateCliente(info.nome(), info.empresaId());
     }
 
     public ValidatedUpdateAdmin validateUpdateAdmin(UpdateAdminRequest info) {
@@ -107,7 +110,14 @@ public class UserValidator {
     public ValidatedUpdateGestor validateUpdateGestor(UpdateGestorRequest info) {
         validarNome(info.nome());
         validarDataAdmissao(info.dataAdmissao());
-        return new ValidatedUpdateGestor(info.nome(), info.dataAdmissao());
+        TurnoTipo turno = parseTurno(info.turno());
+
+        if (info.novaRole() == UserRoleType.FUNCIONARIO_MP
+                || info.novaRole() == UserRoleType.FUNCIONARIO_OP)
+            if (info.turno() == null)
+                throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+
+        return new ValidatedUpdateGestor(info.nome(), info.dataAdmissao(), turno, info.novaRole());
     }
 
     private void validarNome(String nome) {

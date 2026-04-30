@@ -1,5 +1,5 @@
 
-package com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto;
+package com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

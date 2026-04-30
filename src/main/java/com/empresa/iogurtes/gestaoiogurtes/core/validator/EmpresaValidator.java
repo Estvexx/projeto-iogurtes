@@ -1,6 +1,9 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.ValidatedEmpresa;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.ValidatedUpdateEmpresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;

@@ -1,6 +1,6 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;

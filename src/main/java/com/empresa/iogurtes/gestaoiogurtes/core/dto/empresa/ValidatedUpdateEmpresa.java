@@ -1,4 +1,4 @@
-package com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto;
+package com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa;
 
 public record ValidatedUpdateEmpresa(
         String nomeEmpresa,

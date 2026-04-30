@@ -1,4 +1,4 @@
-package com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto;
+package com.empresa.iogurtes.gestaoiogurtes.core.dto.users;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TurnoTipo;

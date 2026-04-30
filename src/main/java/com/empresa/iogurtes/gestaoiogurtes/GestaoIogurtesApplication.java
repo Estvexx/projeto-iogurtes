@@ -1,12 +1,12 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.CreateEmpresaRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.EmpresaResponse;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.UpdateEmpresaRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateAdminRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateClienteRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateFuncionarioRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateGestorRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateFuncionarioRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateGestorRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
