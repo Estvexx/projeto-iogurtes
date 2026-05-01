@@ -61,7 +61,7 @@ public class EmpresaValidator {
     private void validarNomeEmpresa(String nomeEmpresa) {
         if (nomeEmpresa == null || nomeEmpresa.isBlank())
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_NULL);
-        if (nomeEmpresa.length() < 3)
+        if (nomeEmpresa.length() < 5)
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_SHORT);
         if (nomeEmpresa.length() > 150)
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_LONG);

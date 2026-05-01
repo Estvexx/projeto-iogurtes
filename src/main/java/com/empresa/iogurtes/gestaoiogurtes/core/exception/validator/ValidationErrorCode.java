@@ -7,7 +7,7 @@ public enum ValidationErrorCode {
     NOME_TOO_SHORT("VAL_002", "Nome deve ter pelo menos 4 caracteres"),
     NOME_TOO_LONG("VAL_003", "Nome não pode ter mais de 60 caracteres"),
     NOME_EMPRESA_NULL("VAL_021", "Nome da empresa é obrigatório"),
-    NOME_EMPRESA_TOO_SHORT("VAL_022", "Nome da empresa deve ter pelo menos 2 caracteres"),
+    NOME_EMPRESA_TOO_SHORT("VAL_022", "Nome da empresa deve ter pelo menos 4 caracteres"),
     NOME_EMPRESA_TOO_LONG("VAL_023", "Nome da empresa não pode ter mais de 150 caracteres"),
 
     EMAIL_NULL("VAL_004", "Email é obrigatório"),
