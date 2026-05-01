@@ -5,6 +5,8 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.certificacao.CreateCertifica
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.CreateFornecedorTipoRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.FornecedorTipoResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateFuncionarioRequest;
@@ -34,6 +36,7 @@ public class GestaoIogurtesApplication {
 	public CommandLineRunner run(UserService userService,
 								 EmpresaService empresaService,
 								 CertificacaoService certificacaoService,
+								 FornecedorTipoService fornecedorTipoService,
 								 FornecedorService fornecedorService,
 								 MateriaPrimaService materiaPrimaService,
 								 MovimentoStockMPService movimentoStockMPService,
@@ -158,6 +161,26 @@ public class GestaoIogurtesApplication {
 
 			CertificacaoResponse c10 = certificacaoService.createCertificacao(
 					new CreateCertificacaoRequest("Fair Trade", "Certificação de Comércio Justo - garante práticas comerciais justas para produtores de países em desenvolvimento, como o cacau e o açúcar")
+			);
+
+			FornecedorTipoResponse ft1 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Lacticínios", "Fornecedores de leite, natas, manteiga e outros derivados lácteos para produção de iogurtes.")
+			);
+
+			FornecedorTipoResponse ft2 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Frutas", "Fornecedores de frutas frescas, polpas e concentrados para iogurtes de sabores.")
+			);
+
+			FornecedorTipoResponse ft3 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Embalagens", "Fornecedores de copos, tampas, rótulos e materiais de embalagem alimentar.")
+			);
+
+			FornecedorTipoResponse ft4 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Açúcares e Adoçantes", "Fornecedores de açúcar, mel, stevia e outros adoçantes naturais ou artificiais.")
+			);
+
+			FornecedorTipoResponse ft5 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Cacau e Especiarias", "Fornecedores de cacau, baunilha, canela e outros aromatizantes para iogurtes gourmet.")
 			);
 
 			/*// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)

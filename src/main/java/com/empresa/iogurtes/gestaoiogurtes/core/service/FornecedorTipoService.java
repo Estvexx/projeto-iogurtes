@@ -28,8 +28,6 @@ public class FornecedorTipoService {
         this.fornecedorTipoValidator = fornecedorTipoValidator;
     }
 
-    // ─── Criação ────────────────────────────────────────────────────────────────
-
     @Transactional
     public FornecedorTipoResponse createFornecedorTipo(CreateFornecedorTipoRequest request) {
         ValidatedFornecedorTipo info = fornecedorTipoValidator.validateCreateFornecedorTipo(request);
@@ -41,8 +39,6 @@ public class FornecedorTipoService {
             throw new FornecedorTipoException(FornecedorTipoErrorCode.FORNECEDOR_TIPO_CREATE_FAILED);
         }
     }
-
-    // ─── Leitura ────────────────────────────────────────────────────────────────
 
     public FornecedorTipoResponse findById(UUID id) {
         return fornecedorTipoRepository.findById(id)
@@ -64,8 +60,6 @@ public class FornecedorTipoService {
                 .toList();
     }
 
-    // ─── Update ─────────────────────────────────────────────────────────────────
-
     @Transactional
     public FornecedorTipoResponse updateFornecedorTipo(UUID id, UpdateFornecedorTipoRequest request) {
         FornecedorTipo tipo = fornecedorTipoRepository.findById(id)
@@ -82,8 +76,6 @@ public class FornecedorTipoService {
         }
     }
 
-    // ─── Delete ─────────────────────────────────────────────────────────────────
-
     @Transactional
     public void softDelete(UUID id) {
         FornecedorTipo tipo = fornecedorTipoRepository.findById(id)
@@ -95,8 +87,6 @@ public class FornecedorTipoService {
         tipo.softDelete();
         fornecedorTipoRepository.save(tipo);
     }
-
-    // ─── Mapper ─────────────────────────────────────────────────────────────────
 
     private FornecedorTipoResponse toResponse(FornecedorTipo tipo) {
         return new FornecedorTipoResponse(
