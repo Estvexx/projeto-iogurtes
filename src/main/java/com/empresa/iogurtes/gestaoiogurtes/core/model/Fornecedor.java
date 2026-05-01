@@ -1,6 +1,7 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -22,18 +23,27 @@ public class Fornecedor extends BaseEntity {
     @Column(name = "morada", length = 200)
     private String morada;
 
+    @Column(name = "cidade", length = 100)
+    private String cidade;
+
+    @ManyToOne
+    @JoinColumn(name = "tipo_id")
+    private FornecedorTipo tipo;
+
     @OneToMany(mappedBy = "fornecedor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FornecedorCertificacao> certificacoes;
+    private List<FornecedorCertificacao> certificacoes = new ArrayList<>();
 
     public Fornecedor() {}
 
-    public Fornecedor(String nome, String nif, String email,
-                      String telefone, String morada) {
+    public Fornecedor(String nome, String nif, String email, String telefone,
+                      String morada, String cidade, FornecedorTipo tipo) {
         this.nome = nome;
         this.nif = nif;
         this.email = email;
         this.telefone = telefone;
         this.morada = morada;
+        this.cidade = cidade;
+        this.tipo = tipo;
     }
 
     public String getNome() { return nome; }
@@ -41,6 +51,8 @@ public class Fornecedor extends BaseEntity {
     public String getEmail() { return email; }
     public String getTelefone() { return telefone; }
     public String getMorada() { return morada; }
+    public String getCidade() { return cidade; }
+    public FornecedorTipo getTipo() { return tipo; }
     public List<FornecedorCertificacao> getCertificacoes() { return certificacoes; }
 
     public void setNome(String nome) { this.nome = nome; }
@@ -48,6 +60,8 @@ public class Fornecedor extends BaseEntity {
     public void setEmail(String email) { this.email = email; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
     public void setMorada(String morada) { this.morada = morada; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
+    public void setTipo(FornecedorTipo tipo) { this.tipo = tipo; }
     public void setCertificacoes(List<FornecedorCertificacao> certificacoes) { this.certificacoes = certificacoes; }
 
     @Override

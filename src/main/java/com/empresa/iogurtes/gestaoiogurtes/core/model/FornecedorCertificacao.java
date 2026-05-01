@@ -1,59 +1,54 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoCertificacao;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
-
 @Entity
-@Table(name = "fornecedor_certificacoes")
+@Table(name = "fornecedor_certificacoes",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"fornecedor_id", "certificacao_id"}))
+
 public class FornecedorCertificacao extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "fornecedor_id")
+    @JoinColumn(name = "fornecedor_id", nullable = false)
     private Fornecedor fornecedor;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
-    private TipoCertificacao tipo;
+    @ManyToOne
+    @JoinColumn(name = "certificacao_id", nullable = false)
+    private Certificacao certificacao;
 
-    @Column(name = "descricao", length = 120)
-    private String descricao;
+    @Column(name = "data_inicio", nullable = false)
+    private LocalDate dataInicio;
 
-    @Column(name = "data_validade")
-    private LocalDate data_validade;
+    @Column(name = "data_fim")
+    private LocalDate dataFim;
 
     public FornecedorCertificacao() {}
 
-    public FornecedorCertificacao(TipoCertificacao tipo, String descricao, LocalDate data_validade) {
-        this.tipo = tipo;
-        this.descricao = descricao;
-        this.data_validade = data_validade;
-    }
-    public FornecedorCertificacao(Fornecedor fornecedor, TipoCertificacao tipo,
-                                  String descricao, LocalDate data_validade) {
+    public FornecedorCertificacao(Fornecedor fornecedor, Certificacao certificacao,
+                                  LocalDate dataInicio, LocalDate dataFim) {
         this.fornecedor = fornecedor;
-        this.tipo = tipo;
-        this.descricao = descricao;
-        this.data_validade = data_validade;
+        this.certificacao = certificacao;
+        this.dataInicio = dataInicio;
+        this.dataFim = dataFim;
     }
 
     public Fornecedor getFornecedor() { return fornecedor; }
-    public TipoCertificacao getTipo() { return tipo; }
-    public String getDescricao() { return descricao; }
-    public LocalDate getValidade() { return data_validade; }
+    public Certificacao getCertificacao() { return certificacao; }
+    public LocalDate getDataInicio() { return dataInicio; }
+    public LocalDate getDataFim() { return dataFim; }
 
     public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
-    public void setTipo(TipoCertificacao tipo) { this.tipo = tipo; }
-    public void setDescricao(String descricao) { this.descricao = descricao; }
-    public void setValidade(LocalDate data_validade) { this.data_validade = data_validade; }
+    public void setCertificacao(Certificacao certificacao) { this.certificacao = certificacao; }
+    public void setDataInicio(LocalDate dataInicio) { this.dataInicio = dataInicio; }
+    public void setDataFim(LocalDate dataFim) { this.dataFim = dataFim; }
 
     @Override
     public String toString() {
         return "FornecedorCertificacao{" +
                 "id=" + getId() +
-                ", tipo=" + tipo +
-                ", data_validade=" + data_validade +
+                ", fornecedor=" + fornecedor.getNome() +
+                ", certificacao=" + certificacao.getNome() +
                 '}';
     }
 }
