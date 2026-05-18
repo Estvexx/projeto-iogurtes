@@ -1,6 +1,9 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.ValidatedEmpresa;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.ValidatedUpdateEmpresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
@@ -58,7 +61,7 @@ public class EmpresaValidator {
     private void validarNomeEmpresa(String nomeEmpresa) {
         if (nomeEmpresa == null || nomeEmpresa.isBlank())
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_NULL);
-        if (nomeEmpresa.length() < 3)
+        if (nomeEmpresa.length() < 5)
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_SHORT);
         if (nomeEmpresa.length() > 150)
             throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_TOO_LONG);

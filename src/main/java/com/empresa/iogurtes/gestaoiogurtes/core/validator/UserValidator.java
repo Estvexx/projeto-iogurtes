@@ -1,6 +1,6 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.validator;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
@@ -29,7 +29,7 @@ public class UserValidator {
         this.userRoleRepository = userRoleRepository;
     }
 
-    public ValidatedFuncionario validateCreateFuncionario(CreateFuncionarioRequest info) {
+    public ValidatedFuncionario validateCreateFuncionarioMP(CreateFuncionarioRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
@@ -38,13 +38,24 @@ public class UserValidator {
         TurnoTipo turno = parseTurno(info.turno());
         if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
-        UserRole role = parseRole(info.role());
+        return new ValidatedFuncionario(info.nome(), info.email(), info.password(),
+                turno, role, info.dataAdmissao());
+    }
+
+    public ValidatedFuncionario validateCreateFuncionarioOP(CreateFuncionarioRequest info, UserRole role) {
+        validarNome(info.nome());
+        validarEmail(info.email());
+        validarPassword(info.password());
+        validarDataAdmissao(info.dataAdmissao());
+
+        TurnoTipo turno = parseTurno(info.turno());
+        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
         return new ValidatedFuncionario(info.nome(), info.email(), info.password(),
                 turno, role, info.dataAdmissao());
     }
 
-    public ValidatedCliente validateCreateCliente(CreateClienteRequest info) {
+    public ValidatedCliente validateCreateCliente(CreateClienteRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
@@ -53,28 +64,22 @@ public class UserValidator {
         Empresa empresa = empresaRepository.findById(info.empresaId())
                 .orElseThrow(() -> new ValidationException(ValidationErrorCode.EMPRESA_NOT_FOUND));
 
-        UserRole role = parseRole(info.role());
-
         return new ValidatedCliente(info.nome(), info.email(), info.password(), role, empresa);
     }
 
-    public ValidatedAdmin validateCreateAdmin(CreateAdminRequest info) {
+    public ValidatedAdmin validateCreateAdmin(CreateAdminRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
-
-        UserRole role = parseRole(info.role());
 
         return new ValidatedAdmin(info.nome(), info.email(), info.password(), role);
     }
 
-    public ValidatedGestor validateCreateGestor(CreateGestorRequest info) {
+    public ValidatedGestor validateCreateGestor(CreateGestorRequest info, UserRole role) {
         validarNome(info.nome());
         validarEmail(info.email());
         validarPassword(info.password());
         validarDataAdmissao(info.dataAdmissao());
-
-        UserRole role = parseRole(info.role());
 
         return new ValidatedGestor(info.nome(), info.email(), info.password(),
                 role, info.dataAdmissao());
@@ -83,16 +88,18 @@ public class UserValidator {
     public ValidatedUpdateFuncionario validateUpdateFuncionario(UpdateFuncionarioRequest info) {
         validarNome(info.nome());
         validarDataAdmissao(info.dataAdmissao());
-
         TurnoTipo turno = parseTurno(info.turno());
-        if (turno == null) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+        UserRoleType role = info.novaRole();
+        if (turno == null && (role == UserRoleType.FUNCIONARIO_MP
+                            || role == UserRoleType.FUNCIONARIO_OP
+                            || role == null )) throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
 
-        return new ValidatedUpdateFuncionario(info.nome(), turno, info.dataAdmissao());
+        return new ValidatedUpdateFuncionario(info.nome(), turno, info.dataAdmissao(), info.novaRole());
     }
 
     public ValidatedUpdateCliente validateUpdateCliente(UpdateClienteRequest info) {
         validarNome(info.nome());
-        return new ValidatedUpdateCliente(info.nome());
+        return new ValidatedUpdateCliente(info.nome(), info.empresaId());
     }
 
     public ValidatedUpdateAdmin validateUpdateAdmin(UpdateAdminRequest info) {
@@ -103,7 +110,14 @@ public class UserValidator {
     public ValidatedUpdateGestor validateUpdateGestor(UpdateGestorRequest info) {
         validarNome(info.nome());
         validarDataAdmissao(info.dataAdmissao());
-        return new ValidatedUpdateGestor(info.nome(), info.dataAdmissao());
+        TurnoTipo turno = parseTurno(info.turno());
+
+        if (info.novaRole() == UserRoleType.FUNCIONARIO_MP
+                || info.novaRole() == UserRoleType.FUNCIONARIO_OP)
+            if (info.turno() == null)
+                throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
+
+        return new ValidatedUpdateGestor(info.nome(), info.dataAdmissao(), turno, info.novaRole());
     }
 
     private void validarNome(String nome) {
@@ -143,17 +157,6 @@ public class UserValidator {
             return TurnoTipo.valueOf(turno.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new ValidationException(ValidationErrorCode.TURNO_INVALID);
-        }
-    }
-
-    private UserRole parseRole(String role) {
-        if (role == null) throw new ValidationException(ValidationErrorCode.ROLE_NULL);
-        try {
-            UserRoleType roleType = UserRoleType.valueOf(role.toUpperCase());
-            return userRoleRepository.findByRole(roleType)
-                    .orElseThrow(() -> new ValidationException(ValidationErrorCode.ROLE_NOT_FOUND));
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException(ValidationErrorCode.ROLE_INVALID);
         }
     }
 }

@@ -1,24 +1,11 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.scheduler;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.OrdemProducao;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.OrdemProducaoProduto;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoFinal;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.OrdemProducaoRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.service.MovimentoStockPFService;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 public class OrdemProducaoScheduler {
 
-    private final OrdemProducaoRepository ordemRepository;
+    /*private final OrdemProducaoRepository ordemRepository;
     private final ProdutoFinalRepository produtoFinalRepository;
     private final MovimentoStockPFService movimentoStockPFService;
 
@@ -55,5 +42,5 @@ public class OrdemProducaoScheduler {
             ordem.setEstado(EstadoOrdem.CONCLUIDA);
             ordemRepository.save(ordem);
         }
-    }
+    }*/
 }

@@ -7,7 +7,7 @@ public enum ValidationErrorCode {
     NOME_TOO_SHORT("VAL_002", "Nome deve ter pelo menos 4 caracteres"),
     NOME_TOO_LONG("VAL_003", "Nome não pode ter mais de 60 caracteres"),
     NOME_EMPRESA_NULL("VAL_021", "Nome da empresa é obrigatório"),
-    NOME_EMPRESA_TOO_SHORT("VAL_022", "Nome da empresa deve ter pelo menos 2 caracteres"),
+    NOME_EMPRESA_TOO_SHORT("VAL_022", "Nome da empresa deve ter pelo menos 4 caracteres"),
     NOME_EMPRESA_TOO_LONG("VAL_023", "Nome da empresa não pode ter mais de 150 caracteres"),
 
     EMAIL_NULL("VAL_004", "Email é obrigatório"),
@@ -40,7 +40,35 @@ public enum ValidationErrorCode {
     MORADA_TOO_LONG("VAL_027", "Morada não pode exceder 200 caracteres"),
     CODIGO_POSTAL_INVALID("VAL_028", "Código postal inválido. Formato: 1234-567"),
     CIDADE_TOO_LONG("VAL_029", "Cidade não pode exceder 100 caracteres"),
-    TELEFONE_INVALID("VAL_030", "Telefone inválido");
+    TELEFONE_INVALID("VAL_030", "Telefone inválido"),
+
+    NOME_FORNECEDOR_TIPO_NULL("VAL_043", "Nome do tipo de fornecedor é obrigatório"),
+    NOME_FORNECEDOR_TIPO_TOO_SHORT("VAL_044", "Nome do tipo de fornecedor deve ter pelo menos 2 caracteres"),
+    NOME_FORNECEDOR_TIPO_TOO_LONG("VAL_045", "Nome do tipo de fornecedor não pode ter mais de 80 caracteres"),
+    NOME_FORNECEDOR_TIPO_ALREADY_EXISTS("VAL_046", "Já existe um tipo de fornecedor com este nome"),
+    NOME_FORNECEDOR_TIPO_ALREADY_EXISTS_UPDATE("VAL_047", "Já existe outro tipo de fornecedor com este nome"),
+
+    NOME_FORNECEDOR_NULL("VAL_031", "Nome do fornecedor é obrigatório"),
+    NOME_FORNECEDOR_TOO_SHORT("VAL_032", "Nome do fornecedor deve ter pelo menos 2 caracteres"),
+    NOME_FORNECEDOR_TOO_LONG("VAL_033", "Nome do fornecedor não pode ter mais de 150 caracteres"),
+
+    NOME_CERTIFICACAO_ALREADY_EXISTS("VAL_041", "Já existe uma certificação com este nome"),
+    NOME_CERTIFICACAO_ALREADY_EXISTS_UPDATE("VAL_042", "Já existe outra certificação com este nome"),
+    DESCRICAO_CERTIFICACAO_NULL("VAL_041", "Descrição é necessário"),
+    DESCRICAO_CERTIFICACAO_TOO_SHORT("VAL_041", "Descrição deve ter pelo menos 10 caracteres"),
+    DESCRICAO_CERTIFICACAO_TOO_LONG("VAL_041", "Descrição dete ter até 500 caracteres"),
+    NIF_NULL("VAL_034", "NIF é obrigatório"),
+    NIF_INVALID("VAL_035", "NIF inválido"),
+    NIF_ALREADY_EXISTS("VAL_036", "NIF já existe"),
+
+    EMAIL_FORNECEDOR_INVALID_FORMAT("VAL_037", "Formato de email do fornecedor inválido"),
+
+    NOME_CERTIFICACAO_NULL("VAL_038", "Nome da certificação é obrigatório"),
+    NOME_CERTIFICACAO_TOO_SHORT("VAL_039", "Nome da certificação deve ter pelo menos 2 caracteres"),
+    NOME_CERTIFICACAO_TOO_LONG("VAL_040", "Nome da certificação não pode ter mais de 80 caracteres"),
+
+    DATA_INICIO_NULL("VAL_048", "Data de início é obrigatória"),
+    DATA_FIM_BEFORE_DATA_INICIO("VAL_049", "Data de fim não pode ser anterior à data de início");
 
     private final String code;
     private final String message;

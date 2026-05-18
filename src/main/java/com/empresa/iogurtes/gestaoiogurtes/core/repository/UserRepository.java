@@ -18,6 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     // dar get por tipo (funcionario, cliente...)
     List<User> findAllByRole_Role(UserRoleType role);
+    Optional<User> findByIdAndRole_RoleIn(UUID id, List<UserRoleType> roles);
     List<User> findAllByRole_RoleAndIsActiveTrue(UserRoleType role);
     List<User> findAllByRole_RoleInAndIsActiveTrue(Collection<UserRoleType> roles);
     Optional<User> findByIdAndRole_Role(UUID id, UserRoleType role);

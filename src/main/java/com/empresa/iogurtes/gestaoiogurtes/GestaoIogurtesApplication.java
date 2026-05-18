@@ -1,13 +1,16 @@
 package com.empresa.iogurtes.gestaoiogurtes;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.CreateEmpresaRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.EmpresaResponse;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.empresa.dto.UpdateEmpresaRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateAdminRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateClienteRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateFuncionarioRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.domain.users.dto.CreateGestorRequest;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.certificacao.CertificacaoResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.certificacao.CreateCertificacaoRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.CreateFornecedorTipoRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.FornecedorTipoResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateFuncionarioRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateGestorRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.UserRole;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRoleRepository;
@@ -32,6 +35,8 @@ public class GestaoIogurtesApplication {
 	@Bean
 	public CommandLineRunner run(UserService userService,
 								 EmpresaService empresaService,
+								 CertificacaoService certificacaoService,
+								 FornecedorTipoService fornecedorTipoService,
 								 FornecedorService fornecedorService,
 								 MateriaPrimaService materiaPrimaService,
 								 MovimentoStockMPService movimentoStockMPService,
@@ -49,15 +54,15 @@ public class GestaoIogurtesApplication {
 				}
 			}
 
-			userService.createAdmin(new CreateAdminRequest("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123", "ADMIN"));
-			userService.createAdmin(new CreateAdminRequest("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456", "ADMIN"));
-			userService.createAdmin(new CreateAdminRequest("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789", "ADMIN"));
-			userService.createGestor(new CreateGestorRequest("Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@123", "GESTOR", LocalDate.of(2022, 3, 15)));
-			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", "GESTOR", LocalDate.of(2021, 7, 20)));
-			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", "GESTOR", LocalDate.of(2023, 1, 10)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", "FUNCIONARIO_MP", LocalDate.of(2024, 3, 1)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", "FUNCIONARIO_OP", LocalDate.of(2023, 11, 15)));
-			userService.createFuncionario(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", "FUNCIONARIO_MP", LocalDate.of(2022, 6, 5)));
+			userService.createAdmin(new CreateAdminRequest("Maria Costa", "maria.costa@empresa.com", "MariaCosta@123"));
+			userService.createAdmin(new CreateAdminRequest("António Silva", "antonio.silva@empresa.com", "AntonioSilva@456"));
+			userService.createAdmin(new CreateAdminRequest("Francisco Esteves", "francisco.esteves@empresa.com", "FranciscoEsteves@789"));
+			userService.createGestor(new CreateGestorRequest("Carla Mendes", "carla.mendes@empresa.com", "CarlaMendes@123", LocalDate.of(2022, 3, 15)));
+			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", LocalDate.of(2021, 7, 20)));
+			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", LocalDate.of(2023, 1, 10)));
+			userService.createFuncionarioMP(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", LocalDate.of(2024, 3, 1)));
+			userService.createFuncionarioOP(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", LocalDate.of(2023, 11, 15)));
+			userService.createFuncionarioMP(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", LocalDate.of(2022, 6, 5)));
 
 			System.out.println("\n========== LISTAGEM DE USERS ==========");
 			userService.findAllActive().forEach(System.out::println);
@@ -85,7 +90,7 @@ public class GestaoIogurtesApplication {
 			EmpresaResponse e4 = empresaService.createEmpresa(new CreateEmpresaRequest("Açúcares & Mel Portugal", "507654321", "+351243987654", "Estrada Nacional 3, Km 145", "2000-123", "Santarém"));
 			EmpresaResponse e5 = empresaService.createEmpresa(new CreateEmpresaRequest("Cacau & Especiarias Gourmet", "506543210", "+351213456789", "Avenida da República, 88, Piso 3", "1050-012", "Lisboa"));
 
-			userService.createCliente(new CreateClienteRequest("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", "CLIENTE", e1.id()));
+			userService.createCliente(new CreateClienteRequest("Pedro Santos", "pedro.santos@empresa.com", "PedroSantos@12", e1.id()));
 
 			// Empresa para softdelete (sem clientes associados)
 			EmpresaResponse eApagar = empresaService.createEmpresa(new CreateEmpresaRequest("Empresa Para Apagar Lda", "500000001", "+351210000001", "Rua Temporária, 1", "1000-001", "Lisboa"));
@@ -116,6 +121,67 @@ public class GestaoIogurtesApplication {
 			System.out.println("\n========== FIND BY ID ==========");
 			System.out.println(empresaService.findById(e1.id()));
 
+			// ========== CRIAR CERTIFICAÇÕES ==========
+			// Certificações obrigatórias para a indústria de lacticínios e alimentar
+			CertificacaoResponse c1 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("ISO 22000", "Sistema de Gestão de Segurança Alimentar - norma internacional para a segurança dos alimentos em toda a cadeia de produção")
+			);
+
+			CertificacaoResponse c2 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("FSSC 22000", "Food Safety System Certification - certificação de segurança alimentar para fabricantes de embalagens e produtos alimentares")
+			);
+
+			CertificacaoResponse c3 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("IFS Food", "International Featured Standards - norma para auditoria de qualidade e segurança de produtos alimentares de marca própria")
+			);
+
+			CertificacaoResponse c4 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("BRCGS Food", "Brand Reputation Compliance Global Standard - norma global para segurança alimentar, reconhecida pela GFSI")
+			);
+
+			CertificacaoResponse c5 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("HACCP", "Hazard Analysis and Critical Control Points - sistema preventivo de controlo de perigos na produção alimentar")
+			);
+
+			CertificacaoResponse c6 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("Certificação Kosher", "Certificação que atesta que o produto está em conformidade com as leis dietéticas judaicas (Kashrut)")
+			);
+
+			CertificacaoResponse c7 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("Certificação Halal", "Certificação que garante que o produto está em conformidade com os requisitos dietéticos islâmicos")
+			);
+
+			CertificacaoResponse c8 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("ISO 14001", "Sistema de Gestão Ambiental - norma internacional para gestão do impacto ambiental das operações")
+			);
+
+			CertificacaoResponse c9 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("Biológico PT-BIO-03", "Certificação de Agricultura Biológica - norma portuguesa para produtos biológicos, reconhecida pela UE")
+			);
+
+			CertificacaoResponse c10 = certificacaoService.createCertificacao(
+					new CreateCertificacaoRequest("Fair Trade", "Certificação de Comércio Justo - garante práticas comerciais justas para produtores de países em desenvolvimento, como o cacau e o açúcar")
+			);
+
+			FornecedorTipoResponse ft1 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Lacticínios", "Fornecedores de leite, natas, manteiga e outros derivados lácteos para produção de iogurtes.")
+			);
+
+			FornecedorTipoResponse ft2 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Frutas", "Fornecedores de frutas frescas, polpas e concentrados para iogurtes de sabores.")
+			);
+
+			FornecedorTipoResponse ft3 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Embalagens", "Fornecedores de copos, tampas, rótulos e materiais de embalagem alimentar.")
+			);
+
+			FornecedorTipoResponse ft4 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Açúcares e Adoçantes", "Fornecedores de açúcar, mel, stevia e outros adoçantes naturais ou artificiais.")
+			);
+
+			FornecedorTipoResponse ft5 = fornecedorTipoService.createFornecedorTipo(
+					new CreateFornecedorTipoRequest("Cacau e Especiarias", "Fornecedores de cacau, baunilha, canela e outros aromatizantes para iogurtes gourmet.")
+			);
 
 			/*// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
 			Empresa eTel1 = empresaService.createEmpresa("Empresa Telefone 1", "505111111", "912345678", "Rua A", "1000-001", "Lisboa");
@@ -149,6 +215,7 @@ public class GestaoIogurtesApplication {
 
 
 
+/*
 
 			try {
 				User authUser = loginService.execute("maria.costa@empresa.com", "MariaCosta@123");
@@ -163,6 +230,7 @@ public class GestaoIogurtesApplication {
 			} catch (IllegalArgumentException ex) {
 				System.out.println("Login com password errada bloqueado: " + ex.getMessage());
 			}
+*/
 
 			/*// Secçao de Fornecedores
 			Fornecedor forn1 = fornecedorService.createFornecedor("Agrilac S.A.", "501234567", "agrilac@fornecedor.com", "+351910000001", "Rua dos Laticínios, 10, Porto", List.of(new FornecedorCertificacao(TipoCertificacao.ISO, "ISO 9001", LocalDate.of(2026, 12, 31))));
