@@ -52,6 +52,7 @@ public enum ValidationErrorCode {
     NOME_FORNECEDOR_TOO_SHORT("VAL_032", "Nome do fornecedor deve ter pelo menos 2 caracteres"),
     NOME_FORNECEDOR_TOO_LONG("VAL_033", "Nome do fornecedor não pode ter mais de 150 caracteres"),
 
+    CERTIFICACAO_NOT_FOUND("VAL_040", "Certificação não encontrada"),
     NOME_CERTIFICACAO_ALREADY_EXISTS("VAL_041", "Já existe uma certificação com este nome"),
     NOME_CERTIFICACAO_ALREADY_EXISTS_UPDATE("VAL_042", "Já existe outra certificação com este nome"),
     DESCRICAO_CERTIFICACAO_NULL("VAL_041", "Descrição é necessário"),
@@ -68,7 +69,9 @@ public enum ValidationErrorCode {
     NOME_CERTIFICACAO_TOO_LONG("VAL_040", "Nome da certificação não pode ter mais de 80 caracteres"),
 
     DATA_INICIO_NULL("VAL_048", "Data de início é obrigatória"),
-    DATA_FIM_BEFORE_DATA_INICIO("VAL_049", "Data de fim não pode ser anterior à data de início");
+    DATA_FIM_BEFORE_DATA_INICIO("VAL_049", "Data de fim não pode ser anterior à data de início"),
+
+    TIPO_NOT_FOUND("VAL_50", "Tipo para fornecedor não encontrado");
 
     private final String code;
     private final String message;

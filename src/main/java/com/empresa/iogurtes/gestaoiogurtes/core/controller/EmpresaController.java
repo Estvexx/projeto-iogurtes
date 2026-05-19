@@ -4,10 +4,12 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.service.EmpresaService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,13 +28,30 @@ public class EmpresaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmpresaResponse>> findAll() {
-        return ResponseEntity.ok(empresaService.findAllActive());
+    public ResponseEntity<Page<EmpresaResponse>> findAllActive(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nomeEmpresa") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return ResponseEntity.ok(empresaService.findAllActive(PageRequest.of(page, size, Sort.by(dir, sort))));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<EmpresaResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(empresaService.findById(id));
+    }
+
+    @GetMapping("/inactive")
+    public ResponseEntity<Page<EmpresaResponse>> findAllInactive(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nomeEmpresa") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort.Direction dir = direction.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        return ResponseEntity.ok(empresaService.findAllInactive(PageRequest.of(page, size, Sort.by(dir, sort))));
     }
 
     @PutMapping("/{id}")

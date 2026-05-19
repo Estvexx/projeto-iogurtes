@@ -1,16 +1,21 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.empresa.EmpresaException;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Empresa;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.EmpresaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.validator.EmpresaValidator;
+import com.empresa.iogurtes.gestaoiogurtes.core.utils.PhoneUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -18,26 +23,26 @@ public class EmpresaService {
 
     private final EmpresaRepository empresaRepository;
     private final UserRepository userRepository;
-    private final EmpresaValidator empresaValidator;
 
     public EmpresaService(EmpresaRepository empresaRepository,
-                          UserRepository userRepository,
-                          EmpresaValidator empresaValidator) {
+                          UserRepository userRepository) {
         this.empresaRepository = empresaRepository;
         this.userRepository = userRepository;
-        this.empresaValidator = empresaValidator;
     }
 
 
     @Transactional
-    public EmpresaResponse createEmpresa(CreateEmpresaRequest request) {
-        ValidatedEmpresa info = empresaValidator.validateCreateEmpresa(request);
+    public EmpresaResponse createEmpresa(CreateEmpresaRequest info) {
+        if (empresaRepository.existsByNipc(info.nipc()))
+            throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
+
+        String telefone = validarTelefone(info.telefone());
 
         try {
             Empresa empresa = new Empresa(
                     info.nomeEmpresa(),
                     info.nipc(),
-                    info.telefone(),
+                    telefone,
                     info.morada(),
                     info.codigoPostal(),
                     info.cidade()
@@ -54,38 +59,35 @@ public class EmpresaService {
                 .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
     }
 
-    public List<EmpresaResponse> findAll() {
-        return empresaRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<EmpresaResponse> findAll(Pageable pageable) {
+        return empresaRepository.findAll(pageable)
+                .map(this::toResponse);
     }
 
-    public List<EmpresaResponse> findAllActive() {
-        return empresaRepository.findAllByIsActiveTrue()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<EmpresaResponse> findAllActive(Pageable pageable) {
+        return empresaRepository.findAllByIsActiveTrue(pageable)
+                .map(this::toResponse);
     }
 
-    public List<EmpresaResponse> findAllInactive() {
-        return empresaRepository.findAllByIsActiveFalse()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<EmpresaResponse> findAllInactive(Pageable pageable) {
+        return empresaRepository.findAllByIsActiveFalse(pageable)
+                .map(this::toResponse);
     }
 
 
     @Transactional
-    public EmpresaResponse updateEmpresa(UUID id, UpdateEmpresaRequest request) {
-        Empresa empresa = empresaRepository.findById(id)
+    public EmpresaResponse updateEmpresa(UUID id, UpdateEmpresaRequest info) {
+        Empresa empresa = empresaRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
 
-        ValidatedUpdateEmpresa info = empresaValidator.validateUpdateEmpresa(id, request);
+        if (empresaRepository.existsByNipcAndIdNot(info.nipc(), id))
+            throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
+
+        String telefone = validarTelefone(info.telefone());
 
         try {
             empresa.setNomeEmpresa(info.nomeEmpresa());
-            empresa.setTelefone(info.telefone());
+            empresa.setTelefone(telefone);
             empresa.setMorada(info.morada());
             empresa.setCodigoPostal(info.codigoPostal());
             empresa.setCidade(info.cidade());
@@ -97,7 +99,7 @@ public class EmpresaService {
 
     @Transactional
     public void softDelete(UUID id) {
-        Empresa empresa = empresaRepository.findById(id)
+        Empresa empresa = empresaRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new EmpresaException(EmpresaErrorCode.EMPRESA_NOT_FOUND));
 
         if (userRepository.existsByEmpresa_IdAndIsActiveTrue(id)) {
@@ -119,5 +121,9 @@ public class EmpresaService {
                 empresa.getCidade(),
                 empresa.getCreatedAt()
         );
+    }
+
+    private String validarTelefone(String telefone) {
+        return PhoneUtils.validarENormalizar(telefone);
     }
 }

@@ -5,8 +5,11 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.certificacao.CreateCertifica
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_certificacao.AddCertificacaoRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.CreateFornecedorTipoRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.FornecedorTipoResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.CreateFornecedorRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.FornecedorResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateFuncionarioRequest;
@@ -22,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @EnableScheduling
 @SpringBootApplication
@@ -61,27 +65,8 @@ public class GestaoIogurtesApplication {
 			userService.createGestor(new CreateGestorRequest("Rui Oliveira", "rui.oliveira@empresa.com", "RuiOliveira@456", LocalDate.of(2021, 7, 20)));
 			userService.createGestor(new CreateGestorRequest("Inês Sousa", "ines.sousa@empresa.com", "InesSousa@789", LocalDate.of(2023, 1, 10)));
 			userService.createFuncionarioMP(new CreateFuncionarioRequest("Ana Ferreira", "ana.ferreira@empresa.com", "AnaFerreira@123", "MANHA", LocalDate.of(2024, 3, 1)));
-			userService.createFuncionarioOP(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024", "NOITE", LocalDate.of(2023, 11, 15)));
-			userService.createFuncionarioMP(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321", "TARDE", LocalDate.of(2022, 6, 5)));
-
-			System.out.println("\n========== LISTAGEM DE USERS ==========");
-			userService.findAllActive().forEach(System.out::println);
-			System.out.println("\n========== TODOS OS USERS ATIVOS ==========");
-			userService.findAllActive().forEach(System.out::println);
-			System.out.println("\n========== ADMINS ==========");
-			userService.findAllAdmins().forEach(System.out::println);
-			System.out.println("\n========== GESTORES ==========");
-			userService.findAllGestores().forEach(System.out::println);
-			System.out.println("\n========== FUNCIONARIOS (MP + OP) ==========");
-			userService.findAllFuncionarios().forEach(System.out::println);
-			System.out.println("\n========== FUNCIONARIOS MP ==========");
-			userService.findAllFuncionarios_MP().forEach(System.out::println);
-			System.out.println("\n========== FUNCIONARIOS OP ==========");
-			userService.findAllFuncionarios_OP().forEach(System.out::println);
-			System.out.println("\n========== CLIENTES ==========");
-			userService.findAllClientes().forEach(System.out::println);
-			System.out.println("\n========== USERS INATIVOS ==========");
-			userService.findAllInactive().forEach(System.out::println);
+			userService.createFuncionarioOP(new CreateFuncionarioRequest("Bruno Lima", "bruno.lima@empresa.com", "BrunoLima@2024",  "NOITE", LocalDate.of(2023, 11, 15)));
+			userService.createFuncionarioMP(new CreateFuncionarioRequest("Joana Pinto", "joana.pinto@empresa.com", "JoanaPinto@321",  "TARDE", LocalDate.of(2022, 6, 5)));
 
 			// ========== CRIAR EMPRESAS ==========
 			EmpresaResponse e1 = empresaService.createEmpresa(new CreateEmpresaRequest("LactoNorte - Cooperativa de Laticínios", "501234567", "+351252345678", "Rua dos Laticínios, 150", "4760-012", "Vila Nova de Famalicão"));
@@ -108,15 +93,6 @@ public class GestaoIogurtesApplication {
 			empresaService.softDelete(eApagar.id());
 			System.out.println("Empresa apagada: " + eApagar.id());
 
-			// ========== GETS ==========
-			System.out.println("\n========== TODAS AS EMPRESAS ATIVAS ==========");
-			empresaService.findAllActive().forEach(System.out::println);
-
-			System.out.println("\n========== TODAS AS EMPRESAS INATIVAS ==========");
-			empresaService.findAllInactive().forEach(System.out::println);
-
-			System.out.println("\n========== TODAS AS EMPRESAS ==========");
-			empresaService.findAll().forEach(System.out::println);
 
 			System.out.println("\n========== FIND BY ID ==========");
 			System.out.println(empresaService.findById(e1.id()));
@@ -181,6 +157,40 @@ public class GestaoIogurtesApplication {
 
 			FornecedorTipoResponse ft5 = fornecedorTipoService.createFornecedorTipo(
 					new CreateFornecedorTipoRequest("Cacau e Especiarias", "Fornecedores de cacau, baunilha, canela e outros aromatizantes para iogurtes gourmet.")
+			);
+
+			FornecedorResponse f1 = fornecedorService.createFornecedor(
+					new CreateFornecedorRequest(
+							"LactoNorte - Cooperativa de Laticínios",
+							"501234567",
+							"geral@lactonorte.pt",
+							"+351252345678",
+							"Rua dos Laticínios, 150",
+							"Vila Nova de Famalicão",
+							ft1.id(),
+							List.of(
+									new AddCertificacaoRequest(c1.id(), LocalDate.of(2024, 1, 1), LocalDate.of(2026, 12, 31)),
+									new AddCertificacaoRequest(c2.id(), LocalDate.of(2024, 3, 15), LocalDate.of(2027, 3, 14)),
+									new AddCertificacaoRequest(c5.id(), LocalDate.of(2023, 6, 1), LocalDate.of(2026, 5, 31))
+							)
+					)
+			);
+
+			FornecedorResponse f2 = fornecedorService.createFornecedor(
+					new CreateFornecedorRequest(
+							"Frutas do Vale Lda",
+							"509876543",
+							"info@frutasdovale.pt",
+							"+351275123456",
+							"Quinta da Fruta Fresca, Lote 12",
+							"Fundão",
+							ft2.id(),
+							List.of(
+									new AddCertificacaoRequest(c3.id(), LocalDate.of(2024, 2, 1), LocalDate.of(2027, 1, 31)),
+									new AddCertificacaoRequest(c5.id(), LocalDate.of(2023, 9, 1), LocalDate.of(2026, 8, 31)),
+									new AddCertificacaoRequest(c9.id(), LocalDate.of(2024, 4, 1), LocalDate.of(2025, 3, 31))
+							)
+					)
 			);
 
 			/*// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
