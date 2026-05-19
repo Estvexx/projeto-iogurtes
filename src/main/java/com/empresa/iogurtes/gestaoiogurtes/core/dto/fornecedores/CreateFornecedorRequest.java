@@ -21,6 +21,7 @@ public record CreateFornecedorRequest(
         @Email(message = "Formato de email inválido")
         String email,
 
+        @NotBlank(message = "Telefone é obrigatório")
         String telefone,
 
         @Size(max = 200, message = "Morada deve ter no máximo 200 caracteres")

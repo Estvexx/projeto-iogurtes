@@ -15,7 +15,6 @@ public class UserValidator {
     }
     // FUNCIONÁRIOS
     public void validateCreateFuncionario(CreateFuncionarioRequest info) {
-        validarEmailUnico(info.email());
         validarPassword(info.password());
         validarDataAdmissao(info.dataAdmissao());
     }
@@ -30,20 +29,17 @@ public class UserValidator {
 
     // CLIENTES -> sem update porque o jakarta faz no DTO
     public void validateCreateCliente(CreateClienteRequest info) {
-        validarEmailUnico(info.email());
         validarPassword(info.password());
     }
 
     // ADMIN -> sem update porque o jakarta faz no DTO
     public void validateCreateAdmin(CreateAdminRequest info) {
-        validarEmailUnico(info.email());
         validarPassword(info.password());
     }
 
     // GESTOR
 
     public void validateCreateGestor(CreateGestorRequest info) {
-        validarEmailUnico(info.email());
         validarPassword(info.password());
         validarDataAdmissao(info.dataAdmissao());
     }
@@ -57,10 +53,6 @@ public class UserValidator {
                 || info.novaRole() == UserRoleType.FUNCIONARIO_OP)
             if (info.turno() == null)
                 throw new ValidationException(ValidationErrorCode.TURNO_REQUIRED);
-    }
-
-    private void validarEmailUnico(String email) {
-        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) throw new ValidationException(ValidationErrorCode.EMAIL_INVALID_FORMAT);
     }
 
     private void validarPassword(String password) {

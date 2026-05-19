@@ -7,6 +7,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.CreateFornecedo
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.FornecedorResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.UpdateFornecedorRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.service.FornecedorService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,7 +27,7 @@ public class FornecedorController {
     }
 
     @PostMapping
-    public ResponseEntity<FornecedorResponse> create(@RequestBody CreateFornecedorRequest request) {
+    public ResponseEntity<FornecedorResponse> create(@RequestBody @Valid CreateFornecedorRequest request) {
         return ResponseEntity.status(201).body(fornecedorService.createFornecedor(request));
     }
 
@@ -70,7 +71,7 @@ public class FornecedorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FornecedorResponse> update(@PathVariable UUID id,
+    public ResponseEntity<FornecedorResponse> update(@PathVariable @Valid UUID id,
                                                      @RequestBody UpdateFornecedorRequest request) {
         return ResponseEntity.ok(fornecedorService.updateFornecedor(id, request));
     }
@@ -88,7 +89,7 @@ public class FornecedorController {
     @PostMapping("/{fornecedorId}/certificacoes")
     public ResponseEntity<FornecedorCertificacaoResponse> addCertificacao(
             @PathVariable UUID fornecedorId,
-            @RequestBody AddCertificacaoRequest request) {
+            @RequestBody @Valid AddCertificacaoRequest request) {
         return ResponseEntity.status(201)
                 .body(fornecedorService.addCertificacao(fornecedorId, request));
     }
@@ -96,7 +97,7 @@ public class FornecedorController {
     @PutMapping("/certificacoes/{fornecedorCertificacaoId}")
     public ResponseEntity<FornecedorCertificacaoResponse> updateCertificacao(
             @PathVariable UUID fornecedorCertificacaoId,
-            @RequestBody UpdateFornecedorCertificacaoRequest request) {
+            @RequestBody @Valid UpdateFornecedorCertificacaoRequest request) {
         return ResponseEntity.ok(
                 fornecedorService.updateCertificacao(fornecedorCertificacaoId, request));
     }

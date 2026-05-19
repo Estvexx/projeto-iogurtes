@@ -13,6 +13,7 @@ public record CreateEmpresaRequest(
         @Pattern(regexp = "^\\d{9}$", message = "NIPC deve ter 9 dígitos")
         String nipc,
 
+        @NotBlank(message = "Telefone é obrigatório")
         String telefone,
 
         @Size(max = 200, message = "Morada deve ter no máximo 200 caracteres")

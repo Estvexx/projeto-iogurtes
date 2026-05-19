@@ -10,6 +10,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.CreateForne
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.FornecedorTipoResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.CreateFornecedorRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.FornecedorResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.moeda.CreateMoedaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateFuncionarioRequest;
@@ -24,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -49,7 +51,7 @@ public class GestaoIogurtesApplication {
 								 PalletTipoService palletTipoService,
 								 EncomendaService encomendaService,
 								 LoginService loginService,
-								 UserRoleRepository userRoleRepository) {
+								 UserRoleRepository userRoleRepository, MoedaService moedaService) {
 		return args -> {
 
 			for (UserRoleType roleType : UserRoleType.values()) {
@@ -192,6 +194,12 @@ public class GestaoIogurtesApplication {
 							)
 					)
 			);
+
+			moedaService.createMoeda(new CreateMoedaRequest("EUR", "Euro", "€", BigDecimal.ONE));
+			moedaService.createMoeda(new CreateMoedaRequest("USD", "Dólar Americano", "$", new BigDecimal("0.92")));
+			moedaService.createMoeda(new CreateMoedaRequest("GBP", "Libra Esterlina", "£", new BigDecimal("1.17")));
+			moedaService.createMoeda(new CreateMoedaRequest("BRL", "Real Brasileiro", "R$", new BigDecimal("0.16")));
+			moedaService.createMoeda(new CreateMoedaRequest("CHF", "Franco Suíço", "CHF", new BigDecimal("1.05")));
 
 			/*// Testes de diferentes formatos de telefone (devem ser normalizados e guardados)
 			Empresa eTel1 = empresaService.createEmpresa("Empresa Telefone 1", "505111111", "912345678", "Rua A", "1000-001", "Lisboa");

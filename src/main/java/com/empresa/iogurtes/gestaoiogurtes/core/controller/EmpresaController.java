@@ -4,6 +4,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.CreateEmpresaRequest
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.EmpresaResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.empresa.UpdateEmpresaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.service.EmpresaService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,7 +24,7 @@ public class EmpresaController {
     }
 
     @PostMapping
-    public ResponseEntity<EmpresaResponse> create(@RequestBody CreateEmpresaRequest request) {
+    public ResponseEntity<EmpresaResponse> create(@RequestBody @Valid CreateEmpresaRequest request) {
         return ResponseEntity.status(201).body(empresaService.createEmpresa(request));
     }
 
@@ -56,7 +57,7 @@ public class EmpresaController {
 
     @PutMapping("/{id}")
     public ResponseEntity<EmpresaResponse> update(@PathVariable UUID id,
-                                                  @RequestBody UpdateEmpresaRequest request) {
+                                                  @RequestBody @Valid UpdateEmpresaRequest request) {
         return ResponseEntity.ok(empresaService.updateEmpresa(id, request));
     }
 
