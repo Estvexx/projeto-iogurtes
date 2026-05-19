@@ -19,6 +19,8 @@ public interface MateriaFornecedorRepository extends JpaRepository<MateriaFornec
 
     boolean existsByMateria_IdAndFornecedor_IdAndIdNot(UUID materiaId, UUID fornecedorId, UUID id);
 
+    Optional<MateriaFornecedor>findByMateria_IdAndFornecedor_IdAndIsActiveIsTrue(UUID materiaId, UUID fornecedorId);
+
     Page<MateriaFornecedor> findAllByMateria_IdAndIsActiveTrue(UUID materiaId, Pageable pageable);
     Page<MateriaFornecedor> findAllByIsActiveIsTrue(Pageable pageable);
 
