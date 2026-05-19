@@ -1,17 +1,22 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.Fornecedor;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materiaprima.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materias_tipo.MateriaTipoResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaException;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaFornecedor;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.TipoMateria;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaFornecedorRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockMPRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.validator.MateriaPrimaValidator;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.TipoMateriaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,91 +24,111 @@ import java.util.UUID;
 public class MateriaPrimaService {
 
     private final MateriaPrimaRepository materiaPrimaRepository;
-    private final MateriaPrimaValidator materiaPrimaValidator;
-    private final FornecedorRepository fornecedorRepository;
-    private final ProdutoMateriaRepository produtoMateriaRepository;
-    private final MovimentoStockMPRepository movimentoStockMPRepository;
+    private final MateriaFornecedorRepository materiaFornecedorRepository;
+    private final TipoMateriaRepository tipoMateriaRepository;
 
     public MateriaPrimaService(MateriaPrimaRepository materiaPrimaRepository,
-                               MateriaPrimaValidator materiaPrimaValidator,
-                               FornecedorRepository fornecedorRepository,
-                               ProdutoMateriaRepository produtoMateriaRepository,
-                               MovimentoStockMPRepository movimentoStockMPRepository) {
+                               MateriaFornecedorRepository materiaFornecedorRepository,
+                               TipoMateriaRepository tipoMateriaRepository) {
         this.materiaPrimaRepository = materiaPrimaRepository;
-        this.materiaPrimaValidator = materiaPrimaValidator;
-        this.fornecedorRepository = fornecedorRepository;
-        this.produtoMateriaRepository = produtoMateriaRepository;
-        this.movimentoStockMPRepository = movimentoStockMPRepository;
+        this.materiaFornecedorRepository = materiaFornecedorRepository;
+        this.tipoMateriaRepository = tipoMateriaRepository;
     }
 
     @Transactional
-    public MateriaPrima createMateriaPrima(String nome, String unidade,
-                                           TipoMateriaPrima tipo,
-                                           BigDecimal stockAtual, BigDecimal stockMinimo,
-                                           BigDecimal precoUnitario, UUID fornecedorId) {
+    public MateriaPrimaResponse createMateriaPrima(CreateMateriaPrimaRequest info) {
+        if (materiaPrimaRepository.existsByNomeIgnoreCase(info.nome()))
+            throw new MateriaPrimaException(MateriaPrimaErrorCode.NOME_ALREADY_EXISTS);
 
-        materiaPrimaValidator.validateCreateMateriaPrima(nome, tipo, unidade, stockAtual, stockMinimo, precoUnitario, fornecedorId);
+        TipoMateria tipo = tipoMateriaRepository.findById(info.tipoId())
+                .orElseThrow(() -> new ValidationException(ValidationErrorCode.TIPO_NOT_FOUND));
 
-        Fornecedor fornecedor = fornecedorRepository.getReferenceById(fornecedorId);
-
-        MateriaPrima materiaPrima = new MateriaPrima(nome, tipo, unidade, stockAtual, stockMinimo, precoUnitario, fornecedor);
-        return materiaPrimaRepository.save(materiaPrima);
+        try {
+            MateriaPrima materia = new MateriaPrima(
+                    info.nome(), info.unidade(), info.stockMinimo(), info.taxaIva(), tipo);
+            return toResponse(materiaPrimaRepository.save(materia));
+        } catch (Exception e) {
+            throw new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_CREATE_FAILED);
+        }
     }
 
-    @Transactional
-    public MateriaPrima updateMateriaPrima(UUID id, String nome, String unidade,
-                                           TipoMateriaPrima tipo,
-                                           BigDecimal stockMinimo, BigDecimal precoUnitario,
-                                           UUID fornecedorId) {
-
-        MateriaPrima materiaPrima = materiaPrimaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Matéria prima não encontrada"));
-
-        materiaPrimaValidator.validateUpdateMateriaPrima(nome,tipo,  unidade, stockMinimo, precoUnitario, fornecedorId);
-
-        Fornecedor fornecedor = fornecedorRepository.getReferenceById(fornecedorId);
-
-        materiaPrima.setNome(nome);
-        materiaPrima.setUnidade(unidade);
-        materiaPrima.setTipo(tipo);
-        materiaPrima.setStockMinimo(stockMinimo);
-        materiaPrima.setPrecoUnitario(precoUnitario);
-        materiaPrima.setFornecedor(fornecedor);
-
-        return materiaPrimaRepository.save(materiaPrima);
-    }
-
-    public MateriaPrima getById(UUID id) {
+    public MateriaPrimaResponse findById(UUID id) {
         return materiaPrimaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Matéria prima não encontrada"));
+                .map(this::toResponse)
+                .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
     }
 
-    public List<MateriaPrima> getAll() {
-        return materiaPrimaRepository.findAllByIsActiveTrue();
+    public Page<MateriaPrimaResponse> findAllActive(Pageable pageable) {
+        return materiaPrimaRepository.findAllByIsActiveTrue(pageable)
+                .map(this::toResponse);
     }
 
-    public List<MateriaPrima> getAllIncludingInactive() {
-        return materiaPrimaRepository.findAll();
+    public Page<MateriaPrimaResponse> findAllInactive(Pageable pageable) {
+        return materiaPrimaRepository.findAllByIsActiveFalse(pageable)
+                .map(this::toResponse);
     }
 
     @Transactional
-    public void delete(UUID id) {
-        MateriaPrima materiaPrima = materiaPrimaRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Matéria prima não encontrada"));
+    public MateriaPrimaResponse updateMateriaPrima(UUID id, UpdateMateriaPrimaRequest info) {
+        MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(id)
+                .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
 
-        produtoMateriaRepository.findByMateriaId(id)
-                .forEach(produtoMateria -> {
-                    produtoMateria.softDelete();
-                    produtoMateriaRepository.save(produtoMateria);
-                });
+        if (materiaPrimaRepository.existsByNomeIgnoreCaseAndIdNot(info.nome(), id))
+            throw new MateriaPrimaException(MateriaPrimaErrorCode.NOME_ALREADY_EXISTS);
 
-        movimentoStockMPRepository.findByMateriaId(id)
-                .forEach(movimento -> {
-                    movimento.softDelete();
-                    movimentoStockMPRepository.save(movimento);
-                });
+        TipoMateria tipo = tipoMateriaRepository.findById(info.tipoId())
+                .orElseThrow(() -> new ValidationException(ValidationErrorCode.TIPO_NOT_FOUND));
 
-        materiaPrima.softDelete();
-        materiaPrimaRepository.save(materiaPrima);
+        try {
+            materia.setNome(info.nome());
+            materia.setUnidade(info.unidade());
+            materia.setStockMinimo(info.stockMinimo());
+            materia.setTaxaIva(info.taxaIva());
+            materia.setTipo(tipo);
+            return toResponse(materiaPrimaRepository.save(materia));
+        } catch (Exception e) {
+            throw new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_UPDATE_FAILED);
+        }
+    }
+
+    // MELHORAR ESTE SOFT DELETE
+    @Transactional
+    public void softDelete(UUID id) {
+        MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(id)
+                .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+
+        List<MateriaFornecedor> associacoes = materiaFornecedorRepository.findAllByMateria_IdAndIsActiveTrue(id);
+        associacoes.forEach(mf -> {
+            mf.softDelete();
+            materiaFornecedorRepository.save(mf);
+        });
+
+        materia.softDelete();
+        materiaPrimaRepository.save(materia);
+    }
+
+
+    private MateriaPrimaResponse toResponse(MateriaPrima materia) {
+        MateriaTipoResponse tipoResponse = materia.getTipo() != null
+                ? new MateriaTipoResponse(
+                materia.getTipo().getId(),
+                materia.getTipo().getNome(),
+                materia.getTipo().getDescricao(),
+                materia.getTipo().isActive(),
+                materia.getTipo().getCreatedAt())
+                : null;
+
+        return new MateriaPrimaResponse(
+                materia.getId(),
+                materia.getNome(),
+                materia.getUnidade(),
+                materia.getStockAtual(),
+                materia.getStockMinimo(),
+                materia.getTaxaIva(),
+                tipoResponse,
+                materia.isActive(),
+                materia.getCreatedAt(),
+                materia.getUpdatedAt()
+        );
     }
 }

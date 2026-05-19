@@ -50,7 +50,7 @@ public class MateriaPrimaValidator {
         if (nome.length() < 2 || nome.length() > 120) {
             throw new IllegalArgumentException("Nome deve ter entre 2 e 120 caracteres");
         }
-        if (materiaPrimaRepository.existsByNome(nome)) {
+        if (materiaPrimaRepository.existsByNomeIgnoreCase(nome)) {
             throw new IllegalArgumentException("Já existe uma matéria prima com este nome");
         }
     }

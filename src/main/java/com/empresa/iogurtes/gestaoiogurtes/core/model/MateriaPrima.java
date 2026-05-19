@@ -1,19 +1,15 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMateriaPrima;
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "materias_primas")
 public class MateriaPrima extends BaseEntity {
 
-    @Column(name = "nome", nullable = false, length = 120)
+    @Column(name = "nome", nullable = false, unique = true, length = 120)
     private String nome;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
-    private TipoMateriaPrima tipo;
 
     @Column(name = "unidade", length = 10)
     private String unidade;
@@ -24,51 +20,38 @@ public class MateriaPrima extends BaseEntity {
     @Column(name = "stock_minimo", precision = 12, scale = 3)
     private BigDecimal stockMinimo = BigDecimal.ZERO;
 
-    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precoUnitario = BigDecimal.ZERO;
+    @Column(name = "taxa_iva", nullable = false, precision = 5, scale = 2)
+    private BigDecimal taxaIva = BigDecimal.ZERO;
 
-    @ManyToOne
-    @JoinColumn(name = "fornecedor_id", nullable = false)
-    private Fornecedor fornecedor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_id")
+    private TipoMateria tipo;
 
     public MateriaPrima() {}
 
-    // utilizo o bigdecimal devido a precisão dos valores
-    public MateriaPrima(String nome, TipoMateriaPrima tipo, String unidade, BigDecimal stockAtual,
-                        BigDecimal stockMinimo, BigDecimal precoUnitario,
-                        Fornecedor fornecedor) {
+    public MateriaPrima(String nome, String unidade, BigDecimal stockMinimo,
+                        BigDecimal taxaIva, TipoMateria tipo) {
         this.nome = nome;
-        this.tipo = tipo;
         this.unidade = unidade;
-        this.stockAtual = stockAtual;
+        this.stockAtual = BigDecimal.ZERO;
         this.stockMinimo = stockMinimo;
-        this.precoUnitario = precoUnitario;
-        this.fornecedor = fornecedor;
+        this.taxaIva = taxaIva;
+        this.tipo = tipo;
     }
 
+    // Getters
     public String getNome() { return nome; }
-    public TipoMateriaPrima getTipo() { return tipo; }
     public String getUnidade() { return unidade; }
     public BigDecimal getStockAtual() { return stockAtual; }
     public BigDecimal getStockMinimo() { return stockMinimo; }
-    public BigDecimal getPrecoUnitario() { return precoUnitario; }
-    public Fornecedor getFornecedor() { return fornecedor; }
+    public BigDecimal getTaxaIva() { return taxaIva; }
+    public TipoMateria getTipo() { return tipo; }
 
+    // Setters
     public void setNome(String nome) { this.nome = nome; }
-    public void setTipo(TipoMateriaPrima tipo) { this.tipo = tipo; }
     public void setUnidade(String unidade) { this.unidade = unidade; }
     public void setStockAtual(BigDecimal stockAtual) { this.stockAtual = stockAtual; }
     public void setStockMinimo(BigDecimal stockMinimo) { this.stockMinimo = stockMinimo; }
-    public void setPrecoUnitario(BigDecimal precoUnitario) { this.precoUnitario = precoUnitario; }
-    public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
-
-    @Override
-    public String toString() {
-        return "MateriaPrima{" +
-                "id=" + getId() +
-                ", nome='" + nome + '\'' +
-                ", stockAtual=" + stockAtual +
-                ", stockMinimo=" + stockMinimo +
-                '}';
-    }
+    public void setTaxaIva(BigDecimal taxaIva) { this.taxaIva = taxaIva; }
+    public void setTipo(TipoMateria tipo) { this.tipo = tipo; }
 }

@@ -10,6 +10,10 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.CreateForne
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedor_tipos.FornecedorTipoResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.CreateFornecedorRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.fornecedores.FornecedorResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materiaprima.CreateMateriaPrimaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materiaprima.MateriaPrimaResponse;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materias_tipo.CreateTipoMateriaRequest;
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.materias_tipo.MateriaTipoResponse;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.moeda.CreateMoedaRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateAdminRequest;
 import com.empresa.iogurtes.gestaoiogurtes.core.dto.users.CreateClienteRequest;
@@ -45,6 +49,7 @@ public class GestaoIogurtesApplication {
 								 FornecedorTipoService fornecedorTipoService,
 								 FornecedorService fornecedorService,
 								 MateriaPrimaService materiaPrimaService,
+								 TipoMateriaService tipoMateriaService,
 								 MovimentoStockMPService movimentoStockMPService,
 								 ProdutoFinalService produtoFinalService,
 								 OrdemProducaoService ordemProducaoService,
@@ -263,19 +268,63 @@ public class GestaoIogurtesApplication {
 			UUID fornId1 = forn1 != null ? forn1.getId() : null;
 			UUID fornId2 = forn2 != null ? forn2.getId() : null;
 			UUID fornId3 = forn3 != null ? forn3.getId() : null;
-
-			// Matérias Primas
-			MateriaPrima mpLeite = materiaPrimaService.createMateriaPrima("Leite de Vaca", "L", TipoMateriaPrima.BASES, new BigDecimal("0.000"), new BigDecimal("1000.000"), new BigDecimal("0.490"), fornId1);
-			MateriaPrima mpAcucar = materiaPrimaService.createMateriaPrima("Açúcar Branco", "kg", TipoMateriaPrima.ADOCANTES, new BigDecimal("0.000"), new BigDecimal("80.000"), new BigDecimal("0.850"), fornId1);
-			MateriaPrima mpMorango = materiaPrimaService.createMateriaPrima("Polpa de Morango", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("30.000"), new BigDecimal("2.100"), fornId2);
-			MateriaPrima mpLeitePo = materiaPrimaService.createMateriaPrima("Leite em Pó Inteira", "kg", TipoMateriaPrima.BASES, new BigDecimal("0.000"), new BigDecimal("50.000"), new BigDecimal("3.200"), fornId1);
-			MateriaPrima mpFermento = materiaPrimaService.createMateriaPrima("Fermento Lácteo", "kg", TipoMateriaPrima.BASES, new BigDecimal("0.000"), new BigDecimal("5.000"), new BigDecimal("18.000"), fornId1);
-			MateriaPrima mpEmbalagem = materiaPrimaService.createMateriaPrima("Embalagem Iogurte 125g", "un", TipoMateriaPrima.OUTRO, new BigDecimal("0.000"), new BigDecimal("10000.000"), new BigDecimal("0.045"), fornId1);
-			MateriaPrima mpPessego = materiaPrimaService.createMateriaPrima("Polpa de Pêssego", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("30.000"), new BigDecimal("1.900"), fornId2);
-			MateriaPrima mpFramboesa = materiaPrimaService.createMateriaPrima("Polpa de Framboesa", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("20.000"), new BigDecimal("3.500"), fornId2);
-			MateriaPrima mpBaunilha = materiaPrimaService.createMateriaPrima("Extrato de Baunilha", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("3.000"), new BigDecimal("22.000"), fornId2);
-			MateriaPrima mpCacau = materiaPrimaService.createMateriaPrima("Cacau em Pó", "kg", TipoMateriaPrima.SABOR, new BigDecimal("0.000"), new BigDecimal("10.000"), new BigDecimal("5.800"), fornId2);
 */
+
+			MateriaTipoResponse tipoBase = tipoMateriaService.create(
+					new CreateTipoMateriaRequest("Bases", "Leites e bases lácteas"));
+
+			MateriaTipoResponse tipoAdocantes = tipoMateriaService.create(
+					new CreateTipoMateriaRequest("Adoçantes", "Açúcares e adoçantes"));
+
+			MateriaTipoResponse tipoSabor = tipoMateriaService.create(
+					new CreateTipoMateriaRequest("Sabor", "Frutas, polpas e aromas"));
+
+			MateriaTipoResponse tipoConservantes = tipoMateriaService.create(
+					new CreateTipoMateriaRequest("Conservantes", "Conservantes e estabilizadores"));
+
+			MateriaTipoResponse tipoOutro = tipoMateriaService.create(
+					new CreateTipoMateriaRequest("Outro", "Embalagens e outros materiais"));
+			// Matérias Primas
+			MateriaPrimaResponse mpLeite = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Leite de Vaca", "L",
+							new BigDecimal("1000.000"), new BigDecimal("0.490"), tipoBase.id()));
+
+			MateriaPrimaResponse mpAcucar = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Açúcar Branco", "kg",
+							new BigDecimal("80.000"), new BigDecimal("0.850"), tipoAdocantes.id()));
+
+			MateriaPrimaResponse mpMorango = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Polpa de Morango", "kg",
+							new BigDecimal("30.000"), new BigDecimal("2.100"), tipoSabor.id()));
+
+			MateriaPrimaResponse mpLeitePo = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Leite em Pó Inteira", "kg",
+							new BigDecimal("50.000"), new BigDecimal("3.200"), tipoBase.id()));
+
+			MateriaPrimaResponse mpFermento = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Fermento Lácteo", "kg",
+							new BigDecimal("5.000"), new BigDecimal("18.000"), tipoBase.id()));
+
+			MateriaPrimaResponse mpEmbalagem = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Embalagem Iogurte 125g", "un",
+							new BigDecimal("10000.000"), new BigDecimal("0.045"), tipoOutro.id()));
+
+			MateriaPrimaResponse mpPessego = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Polpa de Pêssego", "kg",
+							new BigDecimal("30.000"), new BigDecimal("1.900"), tipoSabor.id()));
+
+			MateriaPrimaResponse mpFramboesa = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Polpa de Framboesa", "kg",
+							new BigDecimal("20.000"), new BigDecimal("3.500"), tipoSabor.id()));
+
+			MateriaPrimaResponse mpBaunilha = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Extrato de Baunilha", "kg",
+							new BigDecimal("3.000"), new BigDecimal("22.000"), tipoSabor.id()));
+
+			MateriaPrimaResponse mpCacau = materiaPrimaService.createMateriaPrima(
+					new CreateMateriaPrimaRequest("Cacau em Pó", "kg",
+							new BigDecimal("10.000"), new BigDecimal("5.800"), tipoSabor.id()));
+
 			// Movimentos Stock MP
 				// Entradas
 			/*MovimentoStockMP m1 = movimentoStockMPService.registarMovimento(userId3, mpLeite.getId(), TipoMovimentoMP.ENTRADA, new BigDecimal("10000.000"), "Entrada inicial de leite");
@@ -358,7 +407,7 @@ public class GestaoIogurtesApplication {
 			if (palletId2 != null) {
 				palletTipoService.delete(palletId2);
 			}
-			if (fornId3 != null) {
+			if ( fornId3!= null) {
 				fornecedorService.delete(fornId3);
 			}
 			userService.delete(userId4);

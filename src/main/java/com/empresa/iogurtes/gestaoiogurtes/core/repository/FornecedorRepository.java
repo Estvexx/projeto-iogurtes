@@ -19,4 +19,5 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, UUID> {
     Page<Fornecedor> findAllByIsActiveFalse(Pageable pageable);
     Page<Fornecedor> findAllByTipo_IdAndIsActiveTrue(UUID tipoId, Pageable pageable);
     boolean existsByTipo_IdAndIsActiveTrue(UUID tipoId);
+
 }
