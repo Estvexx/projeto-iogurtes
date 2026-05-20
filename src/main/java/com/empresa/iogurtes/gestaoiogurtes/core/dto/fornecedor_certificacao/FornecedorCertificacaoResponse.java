@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record FornecedorCertificacaoResponse(
         UUID id,
+        String nomeFornecedor,
         String certificacaoNome,
         LocalDate dataInicio,
         LocalDate dataFim,

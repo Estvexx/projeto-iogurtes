@@ -1,21 +1,19 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
+
 import java.math.BigDecimal;
-
-
 
 @Entity
 @Table(name = "consumos_producao",
         uniqueConstraints = @UniqueConstraint(columnNames = {"ordem_id", "materia_id"}))
-
 public class ConsumoProducao extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordem_id", nullable = false)
     private OrdemProducao ordem;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "materia_id", nullable = false)
     private MateriaPrima materia;
 
@@ -24,27 +22,17 @@ public class ConsumoProducao extends BaseEntity {
 
     public ConsumoProducao() {}
 
-    public ConsumoProducao(OrdemProducao ordem, MateriaPrima materia,
-                           BigDecimal quantidadeKg) {
+    public ConsumoProducao(OrdemProducao ordem, MateriaPrima materia, BigDecimal quantidadeKg) {
         this.ordem = ordem;
         this.materia = materia;
         this.quantidadeKg = quantidadeKg;
     }
 
+    // Getters
     public OrdemProducao getOrdem() { return ordem; }
     public MateriaPrima getMateria() { return materia; }
     public BigDecimal getQuantidadeKg() { return quantidadeKg; }
 
-    public void setOrdem(OrdemProducao ordem) { this.ordem = ordem; }
-    public void setMateria(MateriaPrima materia) { this.materia = materia; }
+    // Setters
     public void setQuantidadeKg(BigDecimal quantidadeKg) { this.quantidadeKg = quantidadeKg; }
-
-    @Override
-    public String toString() {
-        return "ConsumoProducao{" +
-                "id=" + getId() +
-                ", materia=" + materia.getNome() +
-                ", quantidadeKg=" + quantidadeKg +
-                '}';
-    }
 }

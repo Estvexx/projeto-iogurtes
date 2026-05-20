@@ -1,17 +1,26 @@
     package com.empresa.iogurtes.gestaoiogurtes.core.repository;
 
     import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
+    import org.springframework.data.domain.Page;
+    import org.springframework.data.domain.Pageable;
     import org.springframework.data.jpa.repository.JpaRepository;
     import org.springframework.stereotype.Repository;
 
-    import java.util.List;
+    import java.util.Optional;
     import java.util.UUID;
 
     @Repository
     public interface MateriaPrimaRepository extends JpaRepository<MateriaPrima, UUID> {
 
-        List<MateriaPrima> findAllByIsActiveTrue();
-        List<MateriaPrima> findByFornecedorId(UUID fornecedorId);
-        boolean existsByNome(String nome);
+        Optional<MateriaPrima> findByIdAndIsActiveIsTrue(UUID id);
 
+        boolean existsByNomeIgnoreCase(String nome);
+
+        boolean existsByNomeIgnoreCaseAndIdNot(String nome, UUID id);
+
+        boolean existsByTipo_IdAndIsActiveTrue(UUID tipoId);
+
+        Page<MateriaPrima> findAllByIsActiveTrue(Pageable pageable);
+
+        Page<MateriaPrima> findAllByIsActiveFalse(Pageable pageable);
     }

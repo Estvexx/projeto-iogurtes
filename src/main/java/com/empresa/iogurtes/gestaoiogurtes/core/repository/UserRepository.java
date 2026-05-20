@@ -2,6 +2,8 @@ package com.empresa.iogurtes.gestaoiogurtes.core.repository;
 
 import com.empresa.iogurtes.gestaoiogurtes.core.model.User;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.UserRoleType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,17 +15,16 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    Optional<User> findByIdAndIsActiveIsTrue(UUID id);
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
 
-    // dar get por tipo (funcionario, cliente...)
-    List<User> findAllByRole_Role(UserRoleType role);
-    Optional<User> findByIdAndRole_RoleIn(UUID id, List<UserRoleType> roles);
-    List<User> findAllByRole_RoleAndIsActiveTrue(UserRoleType role);
-    List<User> findAllByRole_RoleInAndIsActiveTrue(Collection<UserRoleType> roles);
-    Optional<User> findByIdAndRole_Role(UUID id, UserRoleType role);
-    List<User> findAllByIsActiveTrue();
-    List<User> findAllByIsActiveFalse();
+    Optional<User> findByIdAndRole_RoleInAndIsActiveIsTrue(UUID id, List<UserRoleType> roles);
+    Page<User> findAllByRole_RoleAndIsActiveTrue(UserRoleType role, Pageable pageable);
+    Page<User> findAllByRole_RoleInAndIsActiveTrue(Collection<UserRoleType> roles, Pageable pageable);
+    Optional<User> findByIdAndRole_RoleAndIsActiveIsTrue(UUID id, UserRoleType role);
+    Page<User> findAllByIsActiveTrue(Pageable pageable);
+    Page<User> findAllByIsActiveFalse(Pageable pageable);
 
     //Para ser consumido pelo modulo empresa
     boolean existsByEmpresa_IdAndIsActiveTrue(UUID empresaId);
