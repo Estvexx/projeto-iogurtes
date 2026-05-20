@@ -15,9 +15,11 @@ import java.util.UUID;
 public interface FornecedorCertificacaoRepository extends JpaRepository<FornecedorCertificacao, UUID> {
 
     Page<FornecedorCertificacao> findAllByIsActiveTrue(Pageable pageable);
+    List<FornecedorCertificacao> findAllByFornecedor_IdAndIsActiveTrue(UUID id);
     Optional<FornecedorCertificacao>findByIdAndIsActiveIsTrue(UUID id);
     boolean existsByFornecedor_IdAndCertificacao_Id(UUID fornecedorId, UUID certificacaoId);
     List<FornecedorCertificacao> findAllByFornecedor_Id(UUID fornecedorId);
     // para o scheduler — busca todas as certificacoes com data_fim expirada e ainda ativas
     List<FornecedorCertificacao> findAllByDataFimBeforeAndIsActiveTrue(LocalDate data);
+    boolean existsByCertificacao_IdAndIsActiveTrueAndDataFimAfter(UUID id, LocalDate data);
 }

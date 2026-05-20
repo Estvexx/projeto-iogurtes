@@ -1,16 +1,8 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
-import com.empresa.iogurtes.gestaoiogurtes.core.model.MovimentoStockPF;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.OrdemProducao;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.ProdutoFinal;
-import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockPFRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
 
 @Service
 public class MovimentoStockPFService {
@@ -24,7 +16,7 @@ public class MovimentoStockPFService {
         this.produtoFinalRepository = produtoFinalRepository;
     }
 
-
+/*
     @Transactional
     public MovimentoStockPF registarMovimento(ProdutoFinal produto, OrdemProducao ordem,
                                               TipoMovimentoPF tipo, Integer quantidade,
@@ -65,5 +57,5 @@ public class MovimentoStockPFService {
 
     public List<MovimentoStockPF> getByOrdem(UUID ordemId) {
         return movimentoRepository.findByOrdemId(ordemId);
-    }
+    }*/
 }

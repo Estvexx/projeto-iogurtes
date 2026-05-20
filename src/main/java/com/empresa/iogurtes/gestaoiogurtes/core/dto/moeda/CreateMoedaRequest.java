@@ -8,7 +8,7 @@ public record CreateMoedaRequest(
 
         @NotBlank(message = "Código da moeda é obrigatório")
         @Size(min = 3, max = 3, message = "Código deve ter exatamente 3 caracteres")
-        @Pattern(regexp = "^[A-Za-z]{3}$", message = "Código deve conter apenas letras (ex: EUR, USD)")
+        @Pattern(regexp = "^[A-Za-z]{3}$", message = "Código deve conter apenas letras e tamanho 3 (ex: EUR, USD)")
         String codigo,
 
         @NotBlank(message = "Nome da moeda é obrigatório")

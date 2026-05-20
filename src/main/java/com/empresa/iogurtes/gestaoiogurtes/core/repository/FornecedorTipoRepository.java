@@ -11,8 +11,8 @@ import java.util.UUID;
 
 @Repository
 public interface FornecedorTipoRepository extends JpaRepository<FornecedorTipo, UUID> {
-    boolean existsByNome(String nome);
-    boolean existsByNomeAndIdNot(String nome, UUID id);
+    boolean existsByNomeIgnoreCase(String nome);
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, UUID id);
     Page<FornecedorTipo> findAllByIsActiveTrue(Pageable pageable);
     Page<FornecedorTipo> findAllByIsActiveFalse(Pageable pageable);
     Optional <FornecedorTipo> findByIdAndIsActiveIsTrue(UUID id);

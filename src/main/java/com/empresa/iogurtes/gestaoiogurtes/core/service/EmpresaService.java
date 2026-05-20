@@ -36,6 +36,9 @@ public class EmpresaService {
         if (empresaRepository.existsByNipc(info.nipc()))
             throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
 
+        if(empresaRepository.existsBynomeEmpresaIgnoreCase(info.nomeEmpresa()))
+            throw new ValidationException(ValidationErrorCode.NOME_EMPRESA_ALREADY_EXISTS);
+
         String telefone = validarTelefone(info.telefone());
 
         try {

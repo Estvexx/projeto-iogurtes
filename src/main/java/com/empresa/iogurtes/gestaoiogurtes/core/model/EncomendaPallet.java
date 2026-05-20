@@ -1,78 +1,57 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
 
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "encomenda_pallets",
         uniqueConstraints = @UniqueConstraint(columnNames = {"encomenda_id", "produto_id", "pallet_tipo_id"}))
 public class EncomendaPallet extends BaseEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "encomenda_id", nullable = false)
     private Encomenda encomenda;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "produto_id", nullable = false)
     private ProdutoFinal produto;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pallet_tipo_id", nullable = false)
     private PalletTipo palletTipo;
 
     @Column(name = "quantidade_pallets", nullable = false)
     private Integer quantidadePallets;
 
-    @Column(name = "preco_por_pallet", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precoPorPallet;
+    @Column(name = "preco_por_pallet_eur", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoPorPalletEur;
 
-    @OneToMany(mappedBy = "encomendaPallet", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EncomendaOrdem> ordens;
+    @Column(name = "taxa_iva", nullable = false, precision = 5, scale = 2)
+    private BigDecimal taxaIva;
 
     public EncomendaPallet() {}
 
-    public EncomendaPallet(Encomenda encomenda, ProdutoFinal produto,
-                           PalletTipo palletTipo, Integer quantidadePallets,
-                           BigDecimal precoPorPallet) {
+    public EncomendaPallet(Encomenda encomenda, ProdutoFinal produto, PalletTipo palletTipo,
+                           Integer quantidadePallets, BigDecimal precoPorPalletEur, BigDecimal taxaIva) {
         this.encomenda = encomenda;
         this.produto = produto;
         this.palletTipo = palletTipo;
         this.quantidadePallets = quantidadePallets;
-        this.precoPorPallet = precoPorPallet;
-    }
-    public EncomendaPallet(UUID produtoId, UUID palletTipoId, Integer quantidadePallets, BigDecimal precoPorPallet) {
-        this.produto = new ProdutoFinal();
-        this.produto.setId(produtoId);
-        this.palletTipo = new PalletTipo();
-        this.palletTipo.setId(palletTipoId);
-        this.quantidadePallets = quantidadePallets;
-        this.precoPorPallet = precoPorPallet;
+        this.precoPorPalletEur = precoPorPalletEur;
+        this.taxaIva = taxaIva;
     }
 
+    // Getters
     public Encomenda getEncomenda() { return encomenda; }
     public ProdutoFinal getProduto() { return produto; }
     public PalletTipo getPalletTipo() { return palletTipo; }
     public Integer getQuantidadePallets() { return quantidadePallets; }
-    public BigDecimal getPrecoPorPallet() { return precoPorPallet; }
-    public List<EncomendaOrdem> getOrdens() { return ordens; }
+    public BigDecimal getPrecoPorPalletEur() { return precoPorPalletEur; }
+    public BigDecimal getTaxaIva() { return taxaIva; }
 
-    public void setEncomenda(Encomenda encomenda) { this.encomenda = encomenda; }
-    public void setProduto(ProdutoFinal produto) { this.produto = produto; }
-    public void setPalletTipo(PalletTipo palletTipo) { this.palletTipo = palletTipo; }
+    // Setters
     public void setQuantidadePallets(Integer quantidadePallets) { this.quantidadePallets = quantidadePallets; }
-    public void setPrecoPorPallet(BigDecimal precoPorPallet) { this.precoPorPallet = precoPorPallet; }
-    public void setOrdens(List<EncomendaOrdem> ordens) { this.ordens = ordens; }
-
-    @Override
-    public String toString() {
-        return "EncomendaPallet{" +
-                "id=" + getId() +
-                ", produto=" + produto.getNome() +
-                ", quantidadePallets=" + quantidadePallets +
-                ", precoPorPallet=" + precoPorPallet +
-                '}';
-    }
+    public void setPrecoPorPalletEur(BigDecimal precoPorPalletEur) { this.precoPorPalletEur = precoPorPalletEur; }
+    public void setTaxaIva(BigDecimal taxaIva) { this.taxaIva = taxaIva; }
 }
