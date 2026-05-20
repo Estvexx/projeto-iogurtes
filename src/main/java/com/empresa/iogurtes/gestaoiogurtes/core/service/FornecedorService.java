@@ -28,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,11 +69,12 @@ public class FornecedorService {
 
         String telefone = fornecedorValidator.validarTelefone(info.telefone());
 
-        // Valida as certificações ANTES do try para poder lançar erro das datas
+        List<Certificacao> certificacoes = new ArrayList<>();
         for (AddCertificacaoRequest cert : info.certificacoes()) {
-            certificacaoRepository.findById(cert.certificacaoId())
+            Certificacao certificacao = certificacaoRepository.findById(cert.certificacaoId())
                     .orElseThrow(() -> new ValidationException(ValidationErrorCode.CERTIFICACAO_NOT_FOUND));
             fornecedorValidator.validarDatas(cert.dataInicio(), cert.dataFim());
+            certificacoes.add(certificacao);
         }
 
         try {
@@ -82,8 +84,9 @@ public class FornecedorService {
 
             fornecedorRepository.save(fornecedor);
 
-            for (AddCertificacaoRequest cert : info.certificacoes()) {
-                Certificacao certificacao = certificacaoRepository.findById(cert.certificacaoId()).orElseThrow();
+            for (int i = 0; i < info.certificacoes().size(); i++) {
+                AddCertificacaoRequest cert = info.certificacoes().get(i);
+                Certificacao certificacao = certificacoes.get(i);
                 FornecedorCertificacao fc = new FornecedorCertificacao(
                         fornecedor, certificacao, cert.dataInicio(), cert.dataFim());
                 fornecedorCertificacaoRepository.save(fc);
@@ -229,7 +232,7 @@ public class FornecedorService {
 
     private FornecedorResponse toResponse(Fornecedor fornecedor) {
         List<FornecedorCertificacaoResponse> certificacoes = fornecedorCertificacaoRepository
-                .findAllByFornecedor_Id(fornecedor.getId())
+                .findAllByFornecedor_IdAndIsActiveTrue(fornecedor.getId())
                 .stream()
                 .map(this::toCertificacaoResponse)
                 .toList();

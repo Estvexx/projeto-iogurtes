@@ -81,11 +81,8 @@ public class MateriaFornecedorService
         }
     }
 
-    public MateriaFornecedorResponse findById(UUID materiaId, UUID id)
+    public MateriaFornecedorResponse findById(UUID id)
     {
-        materiaPrimaRepository.findByIdAndIsActiveIsTrue(materiaId)
-                .orElseThrow(()->new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
-
         return materiaFornecedorRepository.findByIdAndIsActiveTrue(id)
                 .map(this::toResponse)
                 .orElseThrow(()->new MateriaFornecedorException(MateriaFornecedorErrorCode.MATERIA_FORNECEDOR_NOT_FOUND));
@@ -107,11 +104,8 @@ public class MateriaFornecedorService
     }
 
     @Transactional
-    public MateriaFornecedorResponse updateMateriaFornecedor(UUID materiaId, UUID id, UpdateMateriaFornecedorRequest info)
+    public MateriaFornecedorResponse updateMateriaFornecedor(UUID id, UpdateMateriaFornecedorRequest info)
     {
-        materiaPrimaRepository.findByIdAndIsActiveIsTrue(materiaId)
-                .orElseThrow(()->new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
-
         MateriaFornecedor mf = materiaFornecedorRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(()->new MateriaFornecedorException(MateriaFornecedorErrorCode.MATERIA_FORNECEDOR_NOT_FOUND));
 
@@ -124,7 +118,6 @@ public class MateriaFornecedorService
         {
             mf.setMoeda(moeda);
             mf.setPrecoUnitario(info.precoUnitario());
-            mf.setPrecoUnitarioEur(precoUnitarioEur);
             mf.setPrazoEstimadoEntregaDias(info.prazoEstimadoEntregaDias());
             mf.setPreferencial(info.preferencial());
             return toResponse(materiaFornecedorRepository.save(mf));
@@ -136,11 +129,8 @@ public class MateriaFornecedorService
     }
 
     @Transactional
-    public void softDelete(UUID materiaId, UUID id)
+    public void softDelete(UUID id)
     {
-        materiaPrimaRepository.findByIdAndIsActiveIsTrue(materiaId)
-                .orElseThrow(()->new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
-
         MateriaFornecedor mf = materiaFornecedorRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(()->new MateriaFornecedorException(MateriaFornecedorErrorCode.MATERIA_FORNECEDOR_NOT_FOUND));
 
@@ -165,7 +155,6 @@ public class MateriaFornecedorService
                 mf.getMoeda().getCodigo(),
                 mf.getMoeda().getSimbolo(),
                 mf.getPrecoUnitario(),
-                mf.getPrecoUnitarioEur(),
                 mf.getPrazoEstimadoEntregaDias(),
                 mf.isPreferencial(),
                 mf.isActive(),

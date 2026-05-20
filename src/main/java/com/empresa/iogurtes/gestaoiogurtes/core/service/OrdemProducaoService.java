@@ -1,221 +1,283 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.ordemproducao.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaException;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.ordemproducao.OrdemProducaoErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.ordemproducao.OrdemProducaoException;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.produtofinal.ProdutoFinalErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.produtofinal.ProdutoFinalException;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.UserErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.UserException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoOrdem;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoMP;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaOrdemRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.MovimentoStockPFRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.OrdemProducaoRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoFinalRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.UserRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.validator.OrdemProducaoValidator;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.TipoMovimentoPF;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class OrdemProducaoService {
 
     private final OrdemProducaoRepository ordemRepository;
+    private final OrdemProducaoProdutoRepository ordemProdutoRepository;
+    private final ConsumoProducaoRepository consumoRepository;
+    private final LoteProducaoRepository loteRepository;
+    private final MovimentoStockPFRepository movimentoStockPfRepository;
+    private final MovimentoStockMPRepository movimentoStockMpRepository;
     private final ProdutoFinalRepository produtoFinalRepository;
+    private final ProdutoMateriaRepository produtoMateriaRepository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
     private final UserRepository userRepository;
-    private final MovimentoStockPFService movimentoStockPFService;
-    private final MovimentoStockMPService movimentoStockMPService;
-    private final EncomendaOrdemRepository encomendaOrdemRepository;
-    private final MovimentoStockPFRepository movimentoStockPFRepository;
-    private final OrdemProducaoValidator validator;
 
     public OrdemProducaoService(OrdemProducaoRepository ordemRepository,
+                                OrdemProducaoProdutoRepository ordemProdutoRepository,
+                                ConsumoProducaoRepository consumoRepository,
+                                LoteProducaoRepository loteRepository,
+                                MovimentoStockPFRepository movimentoStockPfRepository,
+                                MovimentoStockMPRepository movimentoStockMpRepository,
                                 ProdutoFinalRepository produtoFinalRepository,
-                                UserRepository userRepository,
-                                MovimentoStockPFService movimentoStockPFService,
-                                OrdemProducaoValidator validator,
-                                MovimentoStockMPService movimentoStockMPService,
-                                EncomendaOrdemRepository encomendaOrdemRepository,
-                                MovimentoStockPFRepository movimentoStockPFRepository) {
+                                ProdutoMateriaRepository produtoMateriaRepository,
+                                MateriaPrimaRepository materiaPrimaRepository,
+                                UserRepository userRepository
+                                ) {
         this.ordemRepository = ordemRepository;
+        this.ordemProdutoRepository = ordemProdutoRepository;
+        this.consumoRepository = consumoRepository;
+        this.loteRepository = loteRepository;
+        this.movimentoStockPfRepository = movimentoStockPfRepository;
         this.produtoFinalRepository = produtoFinalRepository;
+        this.produtoMateriaRepository = produtoMateriaRepository;
+        this.materiaPrimaRepository = materiaPrimaRepository;
         this.userRepository = userRepository;
-        this.movimentoStockPFService = movimentoStockPFService;
-        this.movimentoStockMPService = movimentoStockMPService;
-        this.encomendaOrdemRepository = encomendaOrdemRepository;
-        this.movimentoStockPFRepository = movimentoStockPFRepository;
-        this.validator = validator;
+        this.movimentoStockMpRepository = movimentoStockMpRepository;
     }
 
     @Transactional
-    public OrdemProducao createOrdem(UUID userId,
-                                     LocalDateTime dataInicio, LocalDateTime dataFim,
-                                      String observacoes,
-                                     List<OrdemProducaoProduto> produtos) {
+    public OrdemProducaoResponse createOrdem(CreateOrdemProducaoRequest info) {
+        User user = userRepository.findByIdAndIsActiveIsTrue(info.userId())
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
 
-        validator.validarCreate(userId, dataInicio, dataFim, observacoes, produtos);
+        Set<UUID> produtoIds = info.produtos().stream()
+                .map(CreateOrdemProducaoProdutoRequest::produtoId)//Aqui pego nos UUIDS das materias
+                .collect(Collectors.toSet()); // coloco todas num set(coleçao que nao aceita repetidas)
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Utilizador não encontrado"));
+        if (produtoIds.size() != info.produtos().size())
+            throw new OrdemProducaoException(OrdemProducaoErrorCode.PRODUTO_DUPLICADO);
 
-        OrdemProducao ordem = new OrdemProducao(user, dataInicio, dataFim, observacoes);
+        // ── Passo 1: calcular consumos totais agregados por matéria ──────────
+        // Mapa: materiaId → quantidade total necessária
+        Map<UUID, BigDecimal> consumosTotais = new HashMap<>();
+
+        for (CreateOrdemProducaoProdutoRequest prodInfo : info.produtos()) {
+            ProdutoFinal produto = produtoFinalRepository.findByIdAndIsActiveIsTrue(prodInfo.produtoId())
+                    .orElseThrow(() -> new ProdutoFinalException(ProdutoFinalErrorCode.PRODUTO_FINAL_NOT_FOUND));
+
+            List<ProdutoMateria> composicao = produtoMateriaRepository.findAllByProduto_IdAndIsActiveTrue(prodInfo.produtoId());
+
+            if (composicao.isEmpty())
+                throw new OrdemProducaoException(OrdemProducaoErrorCode.PRODUTO_SEM_COMPOSICAO, produto.getNome());
+
+            for (ProdutoMateria pm : composicao) {
+                BigDecimal consumo = pm.getQuantidadePorUnidadeProduto().multiply(prodInfo.quantidadeKg());
+                consumosTotais.merge(pm.getMateria().getId(), consumo, BigDecimal::add);
+            }
+        }
+
+        // ── Passo 2: validar stock suficiente para todas as matérias ─────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+
+            // Aqui so verifico se o stock atual é menor que o consumo necessário
+            if (materia.getStockAtual().compareTo(entry.getValue()) < 0)
+                throw new OrdemProducaoException(
+                        OrdemProducaoErrorCode.STOCK_INSUFICIENTE,
+                        materia.getNome() + " (disponível: " + materia.getStockAtual() + ", necessário: " + entry.getValue() + ")"
+                );
+        }
+
+        // ── Passo 3: descontar stock das matérias primas ─────────────────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+            materia.setStockAtual(materia.getStockAtual().subtract(entry.getValue()));
+            materiaPrimaRepository.save(materia);
+        }
+
+        // ── Passo 4: criar ordem ──────────────────────────────────────────────
+        // Aqui deixo assim so passo user e observaçoes porque o resto está na entidade
+        OrdemProducao ordem = new OrdemProducao(user, info.observacoes());
         OrdemProducao savedOrdem = ordemRepository.save(ordem);
 
-        List<ConsumoProducao> todosConsumos = new ArrayList<>();
-        List<OrdemProducaoProduto> produtosMutaveis = new ArrayList<>(produtos);
-
-        for (OrdemProducaoProduto opp : produtosMutaveis) {
-            opp.setOrdem(savedOrdem);
-
-            ProdutoFinal produto = produtoFinalRepository.findById(opp.getProduto().getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Produto não encontrado: " + opp.getProduto().getId()));
-
-            produto.getMaterias().forEach(pm -> {
-                BigDecimal consumoTotal = pm.getQuantidadePorUnidadeProduto()
-                        .multiply(opp.getQuantidadeKg());
-
-                UUID materiaId = pm.getMateria().getId();
-
-                todosConsumos.stream()
-                        .filter(c -> c.getMateria().getId().equals(materiaId))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                existente -> existente.setQuantidadeKg(existente.getQuantidadeKg().add(consumoTotal)),
-                                () -> todosConsumos.add(new ConsumoProducao(savedOrdem, pm.getMateria(), consumoTotal))
-                        );
-
-                movimentoStockMPService.registarMovimento(
-                        userId, materiaId, TipoMovimentoMP.SAIDA, consumoTotal,
-                        "Consumo para produção via ordem " + savedOrdem.getId()
-                );
-            });
+        // ── Passo 5: criar ordem_producao_produtos ────────────────────────────
+        for (CreateOrdemProducaoProdutoRequest prodInfo : info.produtos()) {
+            ProdutoFinal produto = produtoFinalRepository.findByIdAndIsActiveIsTrue(prodInfo.produtoId())
+                    .orElseThrow(() -> new ProdutoFinalException(ProdutoFinalErrorCode.PRODUTO_FINAL_NOT_FOUND));;
+            ordemProdutoRepository.save(new OrdemProducaoProduto(savedOrdem, produto, prodInfo.quantidadeKg()));
         }
 
-        savedOrdem.setProdutos(produtosMutaveis);
-        savedOrdem.setConsumos(todosConsumos);
+        // ── Passo 6: criar consumos_producao ─────────────────────────────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));;
+            consumoRepository.save(new ConsumoProducao(savedOrdem, materia, entry.getValue()));
+        }
 
-        return ordemRepository.save(savedOrdem);
+        return toResponse(savedOrdem);
     }
 
 
-    public OrdemProducao getById(UUID id) {
-        return ordemRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Ordem não encontrada"));
+    public OrdemProducaoResponse findById(UUID id) {
+        return ordemRepository.findByIdAndIsActiveTrue(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new OrdemProducaoException(OrdemProducaoErrorCode.ORDEM_NOT_FOUND));
     }
 
-
-    public List<OrdemProducao> getAll() {
-        return ordemRepository.findAllByIsActiveTrue();
+    public Page<OrdemProducaoResponse> findAll(Pageable pageable) {
+        return ordemRepository.findAllByIsActiveTrue(pageable).map(this::toResponse);
     }
 
-    public List<OrdemProducao> getAllIncludingInactive() {
-        return ordemRepository.findAll();
+    public Page<OrdemProducaoResponse> findByEstado(EstadoOrdem estado, Pageable pageable) {
+        return ordemRepository.findAllByEstadoAndIsActiveTrue(estado, pageable).map(this::toResponse);
     }
 
     @Transactional
-    public void delete(UUID id) {
-        OrdemProducao ordem = getById(id);
+    public OrdemProducaoResponse concluir(UUID id) {
+        OrdemProducao ordem = ordemRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new OrdemProducaoException(OrdemProducaoErrorCode.ORDEM_NOT_FOUND));
 
-        ordem.getProdutos().forEach(produto -> produto.softDelete());
-        ordem.getConsumos().forEach(consumo -> consumo.softDelete());
+        if (ordem.getEstado() != EstadoOrdem.EM_PRODUCAO)
+            throw new OrdemProducaoException(OrdemProducaoErrorCode.TRANSICAO_ESTADO_INVALIDA);
 
-        encomendaOrdemRepository.findByOrdemId(id)
-                .forEach(eo -> {
-                    eo.softDelete();
-                    encomendaOrdemRepository.save(eo);
-                });
+        List<OrdemProducaoProduto> produtos = ordemProdutoRepository.findAllByOrdem_IdAndIsActiveTrue(id);
+        LocalDate hoje = LocalDate.now();
 
-        movimentoStockPFRepository.findByOrdemId(id)
-                .forEach(movimento -> {
-                    movimento.softDelete();
-                    movimentoStockPFRepository.save(movimento);
-                });
+        for (OrdemProducaoProduto opp : produtos) {
+            ProdutoFinal produto = opp.getProduto();
 
-        ordem.softDelete();
-        ordemRepository.save(ordem);
-    }
+            String numeroLote = gerarNumeroLote(hoje);
 
+            LocalDate dataValidade = produto.getValidadeDias() != null
+                    ? hoje.plusDays(produto.getValidadeDias())
+                    : hoje.plusDays(30); // fallback 30 dias
 
-    @Transactional
-    public OrdemProducao updateOrdem(UUID id,
-                                     LocalDateTime dataInicio, LocalDateTime dataFim,
-                                     String observacoes) {
-
-        OrdemProducao ordem = getById(id);
-
-        validator.validarUpdate(ordem, dataInicio, dataFim, observacoes);
-
-        if (dataInicio != null) ordem.setDataInicio(dataInicio);
-        if (dataFim != null) ordem.setDataFim(dataFim);
-        if (observacoes != null) ordem.setObservacoes(observacoes);
-
-        return ordemRepository.save(ordem);
-    }
-
-
-    @Transactional
-    public OrdemProducao cancelarOrdem(UUID id, UUID userId) {
-
-        OrdemProducao ordem = getById(id);
-
-        validator.validarCancelamento(ordem);
-
-        // reverte os consumos de matérias primas
-        for (ConsumoProducao consumo : ordem.getConsumos()) {
-            movimentoStockMPService.registarMovimento(
-                    userId,
-                    consumo.getMateria().getId(),
-                    TipoMovimentoMP.ENTRADA,
-                    consumo.getQuantidadeKg(),
-                    "Reversão por cancelamento da ordem " + ordem.getId()
+            LoteProducao lote = new LoteProducao(
+                    ordem, produto, numeroLote,
+                    opp.getQuantidadeKg(), hoje, dataValidade
             );
+            LoteProducao savedLote = loteRepository.save(lote);
+
+            // Cria movimento stock PF do tipo PRODUCAO
+            movimentoStockPfRepository.save(new MovimentoStockPF(
+                    savedLote,
+                    ordem.getUser(),
+                    TipoMovimentoPF.PRODUCAO,
+                    opp.getQuantidadeKg(),
+                    "Produção automática — Ordem #" + id
+            ));
+
+            movimentoStockMpRepository.save(new MovimentoStockMP(
+                    ordem.getUser(),
+                    TipoMovimentoMP.SAIDA,
+                    "Produção automática — Ordem #" + id
+            ));
+
+            // Incrementa quantidade_lote no produto final
+            produto.setQuantidadeLote(produto.getQuantidadeLote() + 1);
+            produtoFinalRepository.save(produto);
         }
+
+        ordem.setEstado(EstadoOrdem.CONCLUIDA);
+        ordem.setDataFim(LocalDateTime.now());
+        return toResponse(ordemRepository.save(ordem));
+    }
+
+
+    @Transactional
+    public OrdemProducaoResponse cancelar(UUID id) {
+        OrdemProducao ordem = ordemRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new OrdemProducaoException(OrdemProducaoErrorCode.ORDEM_NOT_FOUND));
+
+        if (ordem.getEstado() != EstadoOrdem.EM_PRODUCAO)
+            throw new OrdemProducaoException(OrdemProducaoErrorCode.ORDEM_CANCEL_FAILED);
+
+        List<ConsumoProducao> consumos = consumoRepository.findAllByOrdem_IdAndIsActiveTrue(id);
+        for (ConsumoProducao consumo : consumos) {
+            MateriaPrima materia = consumo.getMateria();
+            materia.setStockAtual(materia.getStockAtual().add(consumo.getQuantidadeKg()));
+            materiaPrimaRepository.save(materia);
+
+            consumo.softDelete();
+            consumoRepository.save(consumo);
+        }
+
+        List<OrdemProducaoProduto> produtos = ordemProdutoRepository.findAllByOrdem_IdAndIsActiveTrue(id);
+        produtos.forEach(opp -> {
+            opp.softDelete();
+            ordemProdutoRepository.save(opp);
+        });
 
         ordem.setEstado(EstadoOrdem.CANCELADA);
-        return ordemRepository.save(ordem);
+        ordem.setDataFim(LocalDateTime.now());
+        return toResponse(ordemRepository.save(ordem));
     }
 
-    @Transactional
-    public OrdemProducao aprovarOrdem(UUID ordemId) {
-        OrdemProducao ordem = getById(ordemId);
 
-        if (ordem.getEstado() != EstadoOrdem.AGUARDA_APROVACAO)
-            throw new IllegalStateException("Ordem não está em estado de aprovação");
+    private String gerarNumeroLote(LocalDate data) {
+        String dataStr = data.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        long seq = loteRepository.countByDataProducao(data) + 1;
+        return String.format("LOT-%s-%03d", dataStr, seq);
+    }
 
-        List<ConsumoProducao> todosConsumos = new ArrayList<>();
+    private OrdemProducaoResponse toResponse(OrdemProducao o) {
+        List<OrdemProducaoProduto> produtos = ordemProdutoRepository.findAllByOrdem_IdAndIsActiveTrue(o.getId());
+        List<ConsumoProducao> consumos = consumoRepository.findAllByOrdem_IdAndIsActiveTrue(o.getId());
 
-        for (OrdemProducaoProduto opp : ordem.getProdutos()) {
-            ProdutoFinal produto = produtoFinalRepository.findById(opp.getProduto().getId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Produto não encontrado: " + opp.getProduto().getId()));
+        return new OrdemProducaoResponse(
+                o.getId(),
+                o.getUser().getId(),
+                o.getUser().getNome(),
+                o.getEstado(),
+                o.getDataInicio(),
+                o.getDataFim(),
+                o.getAprovadoEm(),
+                o.getObservacoes(),
+                produtos.stream().map(this::toProdutoResponse).toList(),
+                consumos.stream().map(this::toConsumoResponse).toList(),
+                o.isActive(),
+                o.getCreatedAt(),
+                o.getUpdatedAt()
+        );
+    }
 
-            produto.getMaterias().forEach(pm -> {
-                BigDecimal consumoTotal = pm.getQuantidadePorUnidadeProduto()
-                        .multiply(opp.getQuantidadeKg());
+    private OrdemProducaoProdutoResponse toProdutoResponse(OrdemProducaoProduto opp) {
+        return new OrdemProducaoProdutoResponse(
+                opp.getId(),
+                opp.getProduto().getId(),
+                opp.getProduto().getNome(),
+                opp.getProduto().getCodigoSku(),
+                opp.getQuantidadeKg()
+        );
+    }
 
-                UUID materiaId = pm.getMateria().getId();
-
-                todosConsumos.stream()
-                        .filter(c -> c.getMateria().getId().equals(materiaId))
-                        .findFirst()
-                        .ifPresentOrElse(
-                                existente -> existente.setQuantidadeKg(existente.getQuantidadeKg().add(consumoTotal)),
-                                () -> todosConsumos.add(new ConsumoProducao(ordem, pm.getMateria(), consumoTotal))
-                        );
-
-                movimentoStockMPService.registarMovimento(
-                        ordem.getUser().getId(), materiaId, TipoMovimentoMP.SAIDA, consumoTotal,
-                        "Consumo para produção via ordem " + ordem.getId()
-                );
-            });
-        }
-
-        ordem.setConsumos(todosConsumos);
-        ordem.setEstado(EstadoOrdem.EM_PRODUCAO);
-        ordem.setAprovadoEm(LocalDateTime.now());
-
-        return ordemRepository.save(ordem);
+    private ConsumoProducaoResponse toConsumoResponse(ConsumoProducao c) {
+        return new ConsumoProducaoResponse(
+                c.getId(),
+                c.getMateria().getId(),
+                c.getMateria().getNome(),
+                c.getMateria().getUnidade(),
+                c.getQuantidadeKg()
+        );
     }
 }

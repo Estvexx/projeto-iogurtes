@@ -1,7 +1,8 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.dto.materias_tipo;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
+import java.math.BigDecimal;
 
 public record CreateTipoMateriaRequest(
         @NotBlank(message = "Nome é obrigatório")
@@ -9,5 +10,10 @@ public record CreateTipoMateriaRequest(
         String nome,
 
         @Size(max = 255, message = "Descrição deve ter no máximo 255 caracteres")
-        String descricao
+        String descricao,
+
+        @NotNull(message = "Taxa de IVA é obrigatória")
+        @DecimalMin(value = "0.0", message = "Taxa de IVA não pode ser negativa")
+        @Digits(integer = 3, fraction = 2, message = "Taxa de IVA inválida")
+        BigDecimal taxaIva
 ) {}

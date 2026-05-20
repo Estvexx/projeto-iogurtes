@@ -32,7 +32,7 @@ public class FornecedorTipoService {
 
     @Transactional
     public FornecedorTipoResponse createFornecedorTipo(CreateFornecedorTipoRequest info) {
-        if (fornecedorTipoRepository.existsByNome(info.nome()))
+        if (fornecedorTipoRepository.existsByNomeIgnoreCase(info.nome()))
             throw new ValidationException(ValidationErrorCode.NOME_FORNECEDOR_TIPO_ALREADY_EXISTS);
 
         try {
@@ -64,7 +64,7 @@ public class FornecedorTipoService {
         FornecedorTipo tipo = fornecedorTipoRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new FornecedorTipoException(FornecedorTipoErrorCode.FORNECEDOR_TIPO_NOT_FOUND));
 
-        if (fornecedorTipoRepository.existsByNomeAndIdNot(info.nome(), id))
+        if (fornecedorTipoRepository.existsByNomeIgnoreCaseAndIdNot(info.nome(), id))
             throw new ValidationException(ValidationErrorCode.NOME_FORNECEDOR_TIPO_ALREADY_EXISTS_UPDATE);
         try {
             tipo.setNome(info.nome());

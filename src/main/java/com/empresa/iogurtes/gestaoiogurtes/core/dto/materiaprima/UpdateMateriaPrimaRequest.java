@@ -18,11 +18,6 @@ public record UpdateMateriaPrimaRequest(
         @Digits(integer = 9, fraction = 3, message = "Stock mínimo inválido")
         BigDecimal stockMinimo,
 
-        @NotNull(message = "Taxa de IVA é obrigatória")
-        @DecimalMin(value = "0.0", message = "Taxa de IVA não pode ser negativa")
-        @Digits(integer = 3, fraction = 2, message = "Taxa de IVA inválida")
-        BigDecimal taxaIva,
-
         @NotNull(message = "Tipo é obrigatório")
         UUID tipoId
 ) {}

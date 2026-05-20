@@ -20,9 +20,6 @@ public class MateriaPrima extends BaseEntity {
     @Column(name = "stock_minimo", precision = 12, scale = 3)
     private BigDecimal stockMinimo = BigDecimal.ZERO;
 
-    @Column(name = "taxa_iva", nullable = false, precision = 5, scale = 2)
-    private BigDecimal taxaIva = BigDecimal.ZERO;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_id")
     private TipoMateria tipo;
@@ -30,12 +27,11 @@ public class MateriaPrima extends BaseEntity {
     public MateriaPrima() {}
 
     public MateriaPrima(String nome, String unidade, BigDecimal stockMinimo,
-                        BigDecimal taxaIva, TipoMateria tipo) {
+                        TipoMateria tipo) {
         this.nome = nome;
         this.unidade = unidade;
         this.stockAtual = BigDecimal.ZERO;
         this.stockMinimo = stockMinimo;
-        this.taxaIva = taxaIva;
         this.tipo = tipo;
     }
 
@@ -44,7 +40,6 @@ public class MateriaPrima extends BaseEntity {
     public String getUnidade() { return unidade; }
     public BigDecimal getStockAtual() { return stockAtual; }
     public BigDecimal getStockMinimo() { return stockMinimo; }
-    public BigDecimal getTaxaIva() { return taxaIva; }
     public TipoMateria getTipo() { return tipo; }
 
     // Setters
@@ -52,6 +47,5 @@ public class MateriaPrima extends BaseEntity {
     public void setUnidade(String unidade) { this.unidade = unidade; }
     public void setStockAtual(BigDecimal stockAtual) { this.stockAtual = stockAtual; }
     public void setStockMinimo(BigDecimal stockMinimo) { this.stockMinimo = stockMinimo; }
-    public void setTaxaIva(BigDecimal taxaIva) { this.taxaIva = taxaIva; }
     public void setTipo(TipoMateria tipo) { this.tipo = tipo; }
 }

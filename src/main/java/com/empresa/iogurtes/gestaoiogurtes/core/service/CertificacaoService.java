@@ -9,20 +9,26 @@ import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationEr
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.validator.ValidationException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Certificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.CertificacaoRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorCertificacaoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Service
 public class CertificacaoService {
 
     private final CertificacaoRepository certificacaoRepository;
+    private final FornecedorCertificacaoRepository fornecedorCertificacaoRepository;
 
-    public CertificacaoService(CertificacaoRepository certificacaoRepository) {
+    public CertificacaoService(CertificacaoRepository certificacaoRepository,
+                               FornecedorCertificacaoRepository fornecedorCertificacaoRepository
+    ) {
         this.certificacaoRepository = certificacaoRepository;
+        this.fornecedorCertificacaoRepository = fornecedorCertificacaoRepository;
     }
 
     @Transactional
@@ -80,6 +86,11 @@ public class CertificacaoService {
     public void softDelete(UUID id) {
         Certificacao certificacao = certificacaoRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new CertificacaoException(CertificacaoErrorCode.CERTIFICACAO_NOT_FOUND));
+
+        // Verifica se há fornecedores com esta certificação ainda válida (dataFim > hoje)
+        if (fornecedorCertificacaoRepository.existsByCertificacao_IdAndIsActiveTrueAndDataFimAfter(id, LocalDate.now())) {
+            throw new CertificacaoException(CertificacaoErrorCode.CERTIFICACAO_EM_USO);
+        }
         certificacao.softDelete();
         certificacaoRepository.save(certificacao);
     }

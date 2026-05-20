@@ -77,7 +77,7 @@ public class UserService {
             UserRole role = userRoleRepository.findByRole(UserRoleType.CLIENTE)
                 .orElseThrow(() -> new ClienteException(ClienteErrorCode.INVALID_ROLE));
 
-            Empresa empresa = empresaRepository.findById(info.empresaId())
+            Empresa empresa = empresaRepository.findByIdAndIsActiveIsTrue(info.empresaId())
                 .orElseThrow(() -> new ClienteException(ClienteErrorCode.EMPRESA_NOT_FOUND));
 
             userValidator.validateCreateCliente(info);
@@ -218,7 +218,7 @@ public class UserService {
                 .orElseThrow(() -> new ClienteException(ClienteErrorCode.CLIENTE_NOT_FOUND));
 
         if (info.empresaId() != null) {
-            Empresa empresa = empresaRepository.findById(info.empresaId())
+            Empresa empresa = empresaRepository.findByIdAndIsActiveIsTrue(info.empresaId())
                     .orElseThrow(() -> new ClienteException(ClienteErrorCode.EMPRESA_NOT_FOUND));
             user.setEmpresa(empresa);
         }

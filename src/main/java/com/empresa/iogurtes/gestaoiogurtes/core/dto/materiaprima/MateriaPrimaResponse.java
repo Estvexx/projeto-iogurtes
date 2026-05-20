@@ -12,7 +12,6 @@ public record MateriaPrimaResponse(
         String unidade,
         BigDecimal stockAtual,
         BigDecimal stockMinimo,
-        BigDecimal taxaIva,
         MateriaTipoResponse tipo,
         boolean isActive,
         LocalDateTime createdAt,

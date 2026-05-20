@@ -24,9 +24,6 @@ public class MateriaFornecedor extends BaseEntity {
     @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    @Column(name = "preco_unitario_eur", nullable = false, precision = 10, scale = 2)
-    private BigDecimal precoUnitarioEur;
-
     @Column(name = "prazo_estimado_entrega_dias")
     private Integer prazoEstimadoEntregaDias;
 
@@ -42,7 +39,6 @@ public class MateriaFornecedor extends BaseEntity {
         this.fornecedor = fornecedor;
         this.moeda = moeda;
         this.precoUnitario = precoUnitario;
-        this.precoUnitarioEur = precoUnitarioEur;
         this.prazoEstimadoEntregaDias = prazoEstimadoEntregaDias;
         this.preferencial = preferencial;
     }
@@ -52,7 +48,6 @@ public class MateriaFornecedor extends BaseEntity {
     public Fornecedor getFornecedor() { return fornecedor; }
     public Moeda getMoeda() { return moeda; }
     public BigDecimal getPrecoUnitario() { return precoUnitario; }
-    public BigDecimal getPrecoUnitarioEur() { return precoUnitarioEur; }
     public Integer getPrazoEstimadoEntregaDias() { return prazoEstimadoEntregaDias; }
     public boolean isPreferencial() { return preferencial; }
 
@@ -61,7 +56,6 @@ public class MateriaFornecedor extends BaseEntity {
     public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
     public void setMoeda(Moeda moeda) { this.moeda = moeda; }
     public void setPrecoUnitario(BigDecimal precoUnitario) { this.precoUnitario = precoUnitario; }
-    public void setPrecoUnitarioEur(BigDecimal precoUnitarioEur) { this.precoUnitarioEur = precoUnitarioEur; }
     public void setPrazoEstimadoEntregaDias(Integer prazoEstimadoEntregaDias) { this.prazoEstimadoEntregaDias = prazoEstimadoEntregaDias; }
     public void setPreferencial(boolean preferencial) { this.preferencial = preferencial; }
 }

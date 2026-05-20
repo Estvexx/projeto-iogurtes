@@ -4,6 +4,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.dto.materias_tipo.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.TipoMateriaErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.TipoMateriaException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.TipoMateria;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.TipoMateriaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +17,11 @@ import java.util.UUID;
 public class TipoMateriaService {
 
     private final TipoMateriaRepository repository;
+    private final MateriaPrimaRepository materiaPrimaRepository;
 
-    public TipoMateriaService(TipoMateriaRepository repository) {
+    public TipoMateriaService(TipoMateriaRepository repository, MateriaPrimaRepository materiaPrimaRepository) {
         this.repository = repository;
+        this.materiaPrimaRepository = materiaPrimaRepository;
     }
 
     @Transactional
@@ -27,7 +30,7 @@ public class TipoMateriaService {
             throw new TipoMateriaException(TipoMateriaErrorCode.NOME_ALREADY_EXISTS);
 
         try {
-            TipoMateria tipo = new TipoMateria(info.nome(), info.descricao());
+            TipoMateria tipo = new TipoMateria(info.nome(), info.descricao(), info.taxaIva());
             return toResponse(repository.save(tipo));
         } catch (Exception e) {
             throw new TipoMateriaException(TipoMateriaErrorCode.TIPO_MATERIA_CREATE_FAILED);
@@ -61,6 +64,7 @@ public class TipoMateriaService {
         try {
             tipo.setNome(info.nome());
             tipo.setDescricao(info.descricao());
+            tipo.setTaxaIva(info.taxaIva());
             return toResponse(repository.save(tipo));
         } catch (Exception e) {
             throw new TipoMateriaException(TipoMateriaErrorCode.TIPO_MATERIA_UPDATE_FAILED);
@@ -71,17 +75,21 @@ public class TipoMateriaService {
     public void softDelete(UUID id) {
         TipoMateria tipo = repository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new TipoMateriaException(TipoMateriaErrorCode.TIPO_MATERIA_NOT_FOUND));
+
+        if (materiaPrimaRepository.existsByTipo_IdAndIsActiveTrue(id)) {
+            throw new TipoMateriaException(TipoMateriaErrorCode.TIPO_MATERIA_EM_USO);
+        }
+
         tipo.softDelete();
         repository.save(tipo);
     }
-
-    // ─── Mapper ──────────────────────────────────────────────────────
 
     private MateriaTipoResponse toResponse(TipoMateria tipo) {
         return new MateriaTipoResponse(
                 tipo.getId(),
                 tipo.getNome(),
                 tipo.getDescricao(),
+                tipo.getTaxaIva(),
                 tipo.isActive(),
                 tipo.getCreatedAt()
         );

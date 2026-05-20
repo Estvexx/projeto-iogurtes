@@ -14,9 +14,6 @@ public record CreateEncomendaMPRequest(
         @NotNull(message = "Fornecedor é obrigatório")
         UUID fornecedorId,
 
-        @NotNull(message = "Moeda é obrigatória")
-        UUID moedaId,
-
         @Size(max = 200, message = "Observações não podem exceder 200 caracteres")
         String observacoes,
 

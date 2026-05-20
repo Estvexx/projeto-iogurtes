@@ -18,6 +18,8 @@
 
         boolean existsByNomeIgnoreCaseAndIdNot(String nome, UUID id);
 
+        boolean existsByTipo_IdAndIsActiveTrue(UUID tipoId);
+
         Page<MateriaPrima> findAllByIsActiveTrue(Pageable pageable);
 
         Page<MateriaPrima> findAllByIsActiveFalse(Pageable pageable);

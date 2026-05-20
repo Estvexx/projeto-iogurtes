@@ -13,7 +13,8 @@ public enum EncomendaMPErrorCode {
     LINHA_ALREADY_EXISTS("EMP_009", "Esta matéria prima já existe nesta encomenda"),
     MATERIA_NAO_FORNECIDA("EMP_010", "Esta matéria prima não é fornecida pelo fornecedor desta encomenda"),
     SEM_LINHAS("EMP_011", "Não é possível confirmar uma encomenda sem linhas"),
-    TRANSICAO_ESTADO_INVALIDA("EMP_012", "Transição de estado inválida");
+    TRANSICAO_ESTADO_INVALIDA("EMP_012", "Transição de estado inválida"),
+    MOEDAS_DIFERENTES("EMP_013", "Todas as linhas da encomenda devem ter a mesma moeda");
 
     private final String code;
     private final String message;

@@ -10,8 +10,6 @@ import com.empresa.iogurtes.gestaoiogurtes.core.exception.fornecedor.FornecedorE
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.fornecedor.FornecedorException;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.materiaprima.MateriaPrimaException;
-import com.empresa.iogurtes.gestaoiogurtes.core.exception.moeda.MoedaErrorCode;
-import com.empresa.iogurtes.gestaoiogurtes.core.exception.moeda.MoedaException;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.UserErrorCode;
 import com.empresa.iogurtes.gestaoiogurtes.core.exception.user.UserException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.*;
@@ -73,10 +71,8 @@ public class EncomendaMPService {
         Fornecedor fornecedor = fornecedorRepository.findByIdAndIsActiveIsTrue(info.fornecedorId())
                 .orElseThrow(() -> new FornecedorException(FornecedorErrorCode.FORNECEDOR_NOT_FOUND));
 
-        Moeda moeda = moedaRepository.findByIdAndIsActiveTrue(info.moedaId())
-                .orElseThrow(() -> new MoedaException(MoedaErrorCode.MOEDA_NOT_FOUND));
-
-        BigDecimal taxaSnapshot = moeda.getTaxaConversaoEur();
+        Moeda moeda = null;
+        BigDecimal taxaSnapshot = null;
 
         List<EncomendaMPLinha> linhas = new ArrayList<>();
         int maxPrazo = 0;
@@ -90,9 +86,17 @@ public class EncomendaMPService {
                     .findByMateria_IdAndFornecedor_IdAndIsActiveIsTrue(linhaInfo.materiaId(), info.fornecedorId())
                     .orElseThrow(() -> new EncomendaMPException(EncomendaMPErrorCode.MATERIA_NAO_FORNECIDA));
 
+            if (moeda == null) {
+                moeda = materiaFornecedor.getMoeda();
+                taxaSnapshot = moeda.getTaxaConversaoEur();
+            } else if (!materiaFornecedor.getMoeda().getId().equals(moeda.getId())) {
+                throw new EncomendaMPException(EncomendaMPErrorCode.MOEDAS_DIFERENTES);
+            }
+
             BigDecimal precoUnitario = materiaFornecedor.getPrecoUnitario();
-            BigDecimal precoUnitarioEur = materiaFornecedor.getPrecoUnitarioEur();
-            taxaIva = materia.getTaxaIva(); // usa a taxa da matéria-prima
+            BigDecimal precoUnitarioEur = precoUnitario.multiply(taxaSnapshot)
+                    .setScale(2, RoundingMode.HALF_UP);
+            taxaIva = materia.getTipo().getTaxaIva(); // usa a taxa da matéria-prima
 
             linhas.add(new EncomendaMPLinha(null, materia, linhaInfo.quantidade(),
                     precoUnitario, precoUnitarioEur, taxaIva));

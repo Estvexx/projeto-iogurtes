@@ -103,26 +103,23 @@ public class MateriaPrimaController {
         return ResponseEntity.ok(materiaFornecedorService.findAllByMateria(materiaId, PageRequest.of(page, size, Sort.by(dir, sort))));
     }
 
-    @GetMapping("/{materiaId}/fornecedores/{id}")
+    @GetMapping("/fornecedores/{id}")
     public ResponseEntity<MateriaFornecedorResponse> findFornecedorById(
-            @PathVariable UUID materiaId,
             @PathVariable UUID id) {
-        return ResponseEntity.ok(materiaFornecedorService.findById(materiaId, id));
+        return ResponseEntity.ok(materiaFornecedorService.findById(id));
     }
 
-    @PutMapping("/{materiaId}/fornecedores/{id}")
+    @PutMapping("/fornecedores/{id}")
     public ResponseEntity<MateriaFornecedorResponse> updateFornecedor(
-            @PathVariable UUID materiaId,
             @PathVariable UUID id,
             @Valid @RequestBody UpdateMateriaFornecedorRequest request) {
-        return ResponseEntity.ok(materiaFornecedorService.updateMateriaFornecedor(materiaId, id, request));
+        return ResponseEntity.ok(materiaFornecedorService.updateMateriaFornecedor(id, request));
     }
 
-    @DeleteMapping("/{materiaId}/fornecedores/{id}")
+    @DeleteMapping("/fornecedores/{id}")
     public ResponseEntity<String> softDeleteFornecedor(
-            @PathVariable UUID materiaId,
             @PathVariable UUID id) {
-        materiaFornecedorService.softDelete(materiaId, id);
+        materiaFornecedorService.softDelete(id);
         return ResponseEntity.ok("Associação eliminada com sucesso");
     }
 }

@@ -14,7 +14,6 @@ public record MateriaFornecedorResponse(
         String moedaCodigo,
         String moedaSimbolo,
         BigDecimal precoUnitario,
-        BigDecimal precoUnitarioEur,
         Integer prazoEstimadoEntregaDias,
         boolean preferencial,
         boolean isActive,

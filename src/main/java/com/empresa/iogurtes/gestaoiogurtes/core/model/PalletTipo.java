@@ -25,13 +25,4 @@ public class PalletTipo extends BaseEntity {
 
     public void setNome(String nome) { this.nome = nome; }
     public void setCapacidadeKg(BigDecimal capacidadeKg) { this.capacidadeKg = capacidadeKg; }
-
-    @Override
-    public String toString() {
-        return "PalletTipo{" +
-                "id=" + getId() +
-                ", nome='" + nome + '\'' +
-                ", capacidadeKg=" + capacidadeKg +
-                '}';
-    }
 }

@@ -1,83 +1,105 @@
 package com.empresa.iogurtes.gestaoiogurtes.core.service;
 
+import com.empresa.iogurtes.gestaoiogurtes.core.dto.pallet_tipo.*;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.pallet_tipo.PalletTipoErrorCode;
+import com.empresa.iogurtes.gestaoiogurtes.core.exception.pallet_tipo.PalletTipoException;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.PalletTipo;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaOrdemRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.EncomendaPalletRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.PalletTipoRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.validator.PalletTipoValidator;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 
 @Service
 public class PalletTipoService {
 
-    private final PalletTipoRepository palletTipoRepository;
-    private final EncomendaPalletRepository encomendaPalletRepository;
-    private final EncomendaOrdemRepository encomendaOrdemRepository;
-    private final PalletTipoValidator validator;
+    private final PalletTipoRepository repository;
 
-    public PalletTipoService(PalletTipoRepository palletTipoRepository,
-                             EncomendaPalletRepository encomendaPalletRepository,
-                             EncomendaOrdemRepository encomendaOrdemRepository,
-                             PalletTipoValidator validator) {
-        this.palletTipoRepository = palletTipoRepository;
-        this.encomendaPalletRepository = encomendaPalletRepository;
-        this.encomendaOrdemRepository = encomendaOrdemRepository;
-        this.validator = validator;
-    }
-
-
-    @Transactional
-    public PalletTipo create(String nome, BigDecimal capacidadeKg) {
-        validator.validarCreate(nome, capacidadeKg);
-        return palletTipoRepository.save(new PalletTipo(nome, capacidadeKg));
-    }
-
-    public PalletTipo getById(UUID id) {
-        return palletTipoRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Tipo de pallet não encontrado"));
-    }
-
-    public List<PalletTipo> getAll() {
-        return palletTipoRepository.findAllByIsActiveTrue();
-    }
-
-    public List<PalletTipo> getAllIncludingInactive() {
-        return palletTipoRepository.findAll();
+    public PalletTipoService(PalletTipoRepository repository) {
+        this.repository = repository;
     }
 
     @Transactional
-    public PalletTipo update(UUID id, String nome, BigDecimal capacidadeKg) {
-        PalletTipo palletTipo = getById(id);
+    public PalletTipoResponse create(CreatePalletTipoRequest info) {
+        if (repository.existsByNomeIgnoreCase(info.nome()))
+            throw new PalletTipoException(PalletTipoErrorCode.NOME_ALREADY_EXISTS);
 
-        validator.validarUpdate(nome, capacidadeKg);
+        if (repository.existsByCapacidadeKg(info.capacidadeKg()))
+            throw new PalletTipoException(PalletTipoErrorCode.CAPACIDADE_ALREADY_EXISTS);
 
-        if (nome != null) palletTipo.setNome(nome);
-        if (capacidadeKg != null) palletTipo.setCapacidadeKg(capacidadeKg);
+        try {
+            PalletTipo pallet = new PalletTipo(info.nome(), info.capacidadeKg());
+            return toResponse(repository.save(pallet));
+        } catch (Exception e) {
+            throw new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_CREATE_FAILED);
+        }
+    }
 
-        return palletTipoRepository.save(palletTipo);
+    public PalletTipoResponse findById(UUID id) {
+        return repository.findByIdAndIsActiveTrue(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_NOT_FOUND));
+    }
+
+    public Page<PalletTipoResponse> findAllActive(Pageable pageable) {
+        return repository.findAllByIsActiveTrue(pageable)
+                .map(this::toResponse);
+    }
+
+    public Page<PalletTipoResponse> findAllInactive(Pageable pageable) {
+        return repository.findAllByIsActiveFalse(pageable)
+                .map(this::toResponse);
     }
 
     @Transactional
-    public void delete(UUID id) {
-        PalletTipo palletTipo = getById(id);
+    public PalletTipoResponse update(UUID id, UpdatePalletTipoRequest info) {
+        PalletTipo pallet = repository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_NOT_FOUND));
 
-        encomendaPalletRepository.findByPalletTipoId(id)
-                .forEach(ep -> {
-                    encomendaOrdemRepository.findByEncomendaPalletId(ep.getId())
-                            .forEach(eo -> {
-                                eo.softDelete();
-                                encomendaOrdemRepository.save(eo);
-                            });
-                    ep.softDelete();
-                    encomendaPalletRepository.save(ep);
-                });
+        if (repository.existsByNomeIgnoreCaseAndIdNot(info.nome(), id))
+            throw new PalletTipoException(PalletTipoErrorCode.NOME_ALREADY_EXISTS);
 
-        palletTipo.softDelete();
-        palletTipoRepository.save(palletTipo);
+        try {
+            pallet.setNome(info.nome());
+            pallet.setCapacidadeKg(info.capacidadeKg());
+            return toResponse(repository.save(pallet));
+        } catch (Exception e) {
+            throw new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_UPDATE_FAILED);
+        }
+    }
+
+    @Transactional
+    public PalletTipoResponse reactivate(UUID id) {
+        PalletTipo pallet = repository.findById(id)
+                .orElseThrow(() -> new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_NOT_FOUND));
+
+        if (pallet.isActive()) {
+            throw new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_ALREADY_ACTIVE);
+        }
+
+        pallet.setActive(true);
+        pallet.setDeletedAt(null);
+        return toResponse(repository.save(pallet));
+    }
+
+    @Transactional
+    public void softDelete(UUID id) {
+        PalletTipo pallet = repository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new PalletTipoException(PalletTipoErrorCode.PALLET_TIPO_NOT_FOUND));
+        pallet.softDelete();
+        repository.save(pallet);
+    }
+
+    private PalletTipoResponse toResponse(PalletTipo pallet) {
+        return new PalletTipoResponse(
+                pallet.getId(),
+                pallet.getNome(),
+                pallet.getCapacidadeKg(),
+                pallet.isActive(),
+                pallet.getCreatedAt(),
+                pallet.getUpdatedAt()
+        );
     }
 }

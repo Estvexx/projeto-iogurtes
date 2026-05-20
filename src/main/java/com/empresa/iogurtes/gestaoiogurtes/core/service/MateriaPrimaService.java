@@ -11,6 +11,7 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.MateriaPrima;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.TipoMateria;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaFornecedorRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.MateriaPrimaRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.ProdutoMateriaRepository;
 import com.empresa.iogurtes.gestaoiogurtes.core.repository.TipoMateriaRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,13 +27,16 @@ public class MateriaPrimaService {
     private final MateriaPrimaRepository materiaPrimaRepository;
     private final MateriaFornecedorRepository materiaFornecedorRepository;
     private final TipoMateriaRepository tipoMateriaRepository;
+    private final ProdutoMateriaRepository produtoMateriaRepository;
 
     public MateriaPrimaService(MateriaPrimaRepository materiaPrimaRepository,
                                MateriaFornecedorRepository materiaFornecedorRepository,
-                               TipoMateriaRepository tipoMateriaRepository) {
+                               TipoMateriaRepository tipoMateriaRepository,
+                               ProdutoMateriaRepository produtoMateriaRepository) {
         this.materiaPrimaRepository = materiaPrimaRepository;
         this.materiaFornecedorRepository = materiaFornecedorRepository;
         this.tipoMateriaRepository = tipoMateriaRepository;
+        this.produtoMateriaRepository = produtoMateriaRepository;
     }
 
     @Transactional
@@ -45,7 +49,7 @@ public class MateriaPrimaService {
 
         try {
             MateriaPrima materia = new MateriaPrima(
-                    info.nome(), info.unidade(), info.stockMinimo(), info.taxaIva(), tipo);
+                    info.nome(), info.unidade(), info.stockMinimo(), tipo);
             return toResponse(materiaPrimaRepository.save(materia));
         } catch (Exception e) {
             throw new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_CREATE_FAILED);
@@ -83,7 +87,6 @@ public class MateriaPrimaService {
             materia.setNome(info.nome());
             materia.setUnidade(info.unidade());
             materia.setStockMinimo(info.stockMinimo());
-            materia.setTaxaIva(info.taxaIva());
             materia.setTipo(tipo);
             return toResponse(materiaPrimaRepository.save(materia));
         } catch (Exception e) {
@@ -91,11 +94,14 @@ public class MateriaPrimaService {
         }
     }
 
-    // MELHORAR ESTE SOFT DELETE
     @Transactional
     public void softDelete(UUID id) {
         MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+
+        if (produtoMateriaRepository.existsByMateria_IdAndIsActiveTrue(id)) {
+            throw new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_EM_USO);
+        }
 
         List<MateriaFornecedor> associacoes = materiaFornecedorRepository.findAllByMateria_IdAndIsActiveTrue(id);
         associacoes.forEach(mf -> {
@@ -114,6 +120,7 @@ public class MateriaPrimaService {
                 materia.getTipo().getId(),
                 materia.getTipo().getNome(),
                 materia.getTipo().getDescricao(),
+                materia.getTipo().getTaxaIva(),
                 materia.getTipo().isActive(),
                 materia.getTipo().getCreatedAt())
                 : null;
@@ -124,7 +131,6 @@ public class MateriaPrimaService {
                 materia.getUnidade(),
                 materia.getStockAtual(),
                 materia.getStockMinimo(),
-                materia.getTaxaIva(),
                 tipoResponse,
                 materia.isActive(),
                 materia.getCreatedAt(),
