@@ -18,10 +18,8 @@ import com.empresa.iogurtes.gestaoiogurtes.core.model.Certificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.Fornecedor;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.FornecedorCertificacao;
 import com.empresa.iogurtes.gestaoiogurtes.core.model.FornecedorTipo;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.CertificacaoRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorCertificacaoRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorRepository;
-import com.empresa.iogurtes.gestaoiogurtes.core.repository.FornecedorTipoRepository;
+import com.empresa.iogurtes.gestaoiogurtes.core.model.enums.EstadoEncomendaMP;
+import com.empresa.iogurtes.gestaoiogurtes.core.repository.*;
 import com.empresa.iogurtes.gestaoiogurtes.core.validator.FornecedorValidator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,21 +37,21 @@ public class FornecedorService {
     private final FornecedorCertificacaoRepository fornecedorCertificacaoRepository;
     private final FornecedorTipoRepository fornecedorTipoRepository;
     private final CertificacaoRepository certificacaoRepository;
-    //private final MateriaPrimaFornecedorRepository materiaPrimaFornecedorRepository;
-    //private final EncomendaMpRepository encomendaMpRepository;
+    private final MateriaFornecedorRepository materiaFornecedorRepository;
+    private final EncomendaMPRepository encomendaMpRepository;
     private final FornecedorValidator fornecedorValidator;
 
     public FornecedorService(FornecedorRepository fornecedorRepository,
                              FornecedorCertificacaoRepository fornecedorCertificacaoRepository,
                              CertificacaoRepository certificacaoRepository,
-                             //MateriaPrimaFornecedorRepository materiaPrimaFornecedorRepository,
-                             //EncomendaMpRepository encomendaMpRepository,
+                             MateriaFornecedorRepository materiaFornecedorRepository,
+                             EncomendaMPRepository encomendaMpRepository,
                              FornecedorTipoRepository fornecedorTipoRepository,
                              FornecedorValidator fornecedorValidator) {
         this.fornecedorRepository = fornecedorRepository;
         this.fornecedorCertificacaoRepository = fornecedorCertificacaoRepository;
-        //this.materiaPrimaFornecedorRepository = materiaPrimaFornecedorRepository;
-        //this.encomendaMpRepository = encomendaMpRepository;
+        this.materiaFornecedorRepository = materiaFornecedorRepository;
+        this.encomendaMpRepository = encomendaMpRepository;
         this. certificacaoRepository = certificacaoRepository;
         this.fornecedorTipoRepository = fornecedorTipoRepository;
         this.fornecedorValidator = fornecedorValidator;
@@ -206,27 +204,32 @@ public class FornecedorService {
         fornecedorCertificacaoRepository.save(fc);
     }
 
-    // ─── Delete ─────────────────────────────────────────────────────────────────
-    // Fazer delete do fonrecedor quando fizer a tabela das
-/*
     @Transactional
     public void softDelete(UUID id) {
-        Fornecedor fornecedor = fornecedorRepository.findById(id)
+        Fornecedor fornecedor = fornecedorRepository.findByIdAndIsActiveIsTrue(id)
                 .orElseThrow(() -> new FornecedorException(FornecedorErrorCode.FORNECEDOR_NOT_FOUND));
 
-        if (encomendaMpRepository.existsByFornecedor_IdAndEntregue(id))
+        if (encomendaMpRepository.existsByFornecedor_IdAndEstadoNotIn(id,
+                List.of(EstadoEncomendaMP.RECEBIDA, EstadoEncomendaMP.CANCELADA)))
             throw new FornecedorException(FornecedorErrorCode.FORNECEDOR_HAS_ENCOMENDAS_PENDENTES);
 
-        // softdelete nas materias fornecedores
-        materiaPrimaFornecedorRepository.findAllByFornecedor_IdAndIsActiveTrue(id)
+        // Soft delete nas certificações do fornecedor
+        fornecedorCertificacaoRepository.findAllByFornecedor_IdAndIsActiveTrue(id)
+                .forEach(fc -> {
+                    fc.softDelete();
+                    fornecedorCertificacaoRepository.save(fc);
+                });
+
+        // Soft delete nas matérias primas do fornecedor
+        materiaFornecedorRepository.findAllByFornecedor_IdAndIsActiveTrue(id)
                 .forEach(mf -> {
                     mf.softDelete();
-                    materiaPrimaFornecedorRepository.save(mf);
+                    materiaFornecedorRepository.save(mf);
                 });
 
         fornecedor.softDelete();
         fornecedorRepository.save(fornecedor);
-    }*/
+    }
 
     // ─── Mappers ─────────────────────────────────────────────────────────────────
 

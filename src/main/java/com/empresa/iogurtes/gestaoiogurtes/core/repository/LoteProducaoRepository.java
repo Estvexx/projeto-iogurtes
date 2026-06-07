@@ -16,6 +16,9 @@ import java.util.UUID;
 @Repository
 public interface LoteProducaoRepository extends JpaRepository<LoteProducao, UUID> {
 
+    Optional<LoteProducao> findByIdAndIsActiveIsTrue(UUID id);
+    Page<LoteProducao> findAllByIsActiveTrue(Pageable pageable);
+
     // Lotes DISPONIVEL de um produto ordenados FEFO (data_validade ASC)
     List<LoteProducao> findAllByProduto_IdAndEstadoOrderByDataValidadeAsc(UUID produtoId, EstadoLote estado);
 

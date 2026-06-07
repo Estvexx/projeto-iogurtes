@@ -76,13 +76,11 @@ public class FornecedorController {
         return ResponseEntity.ok(fornecedorService.updateFornecedor(id, request));
     }
 
-    /*
     @DeleteMapping("/{id}")
     public ResponseEntity<String> softDelete(@PathVariable UUID id) {
         fornecedorService.softDelete(id);
         return ResponseEntity.ok("Fornecedor eliminado com sucesso");
     }
-    */
 
     // ─── Gestão de Certificações do Fornecedor ────────────────────────────────
 

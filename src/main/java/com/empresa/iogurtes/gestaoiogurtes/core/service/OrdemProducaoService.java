@@ -203,6 +203,20 @@ public class OrdemProducaoService {
         return toResponse(ordemRepository.save(ordem));
     }
 
+    @Transactional
+    public OrdemProducaoResponse aprovar(UUID id) {
+        OrdemProducao ordem = ordemRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new OrdemProducaoException(OrdemProducaoErrorCode.ORDEM_NOT_FOUND));
+
+        if (ordem.getEstado() != EstadoOrdem.AGUARDA_APROVACAO)
+            throw new OrdemProducaoException(OrdemProducaoErrorCode.TRANSICAO_ESTADO_INVALIDA);
+
+        ordem.setEstado(EstadoOrdem.EM_PRODUCAO);
+        ordem.setAprovadoEm(LocalDateTime.now());
+
+        return toResponse(ordemRepository.save(ordem));
+    }
+
 
     @Transactional
     public OrdemProducaoResponse cancelar(UUID id) {

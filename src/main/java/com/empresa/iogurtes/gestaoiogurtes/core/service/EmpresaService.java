@@ -33,7 +33,7 @@ public class EmpresaService {
 
     @Transactional
     public EmpresaResponse createEmpresa(CreateEmpresaRequest info) {
-        if (empresaRepository.existsByNipc(info.nipc()))
+        if (empresaRepository.existsByNipcAndIsActiveTrue(info.nipc()))
             throw new ValidationException(ValidationErrorCode.NIPC_ALREADY_EXISTS);
 
         if(empresaRepository.existsBynomeEmpresaIgnoreCase(info.nomeEmpresa()))

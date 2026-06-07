@@ -13,7 +13,7 @@ import java.util.UUID;
 public interface EmpresaRepository extends JpaRepository<Empresa, UUID> {
 
     Optional<Empresa> findByIdAndIsActiveIsTrue(UUID id);
-    boolean existsByNipc(String nipc);
+    boolean existsByNipcAndIsActiveTrue(String nipc);
     boolean existsBynomeEmpresaIgnoreCase(String nomeEmpresa);
     Page<Empresa> findAllByIsActiveTrue(Pageable pageable);
     Page<Empresa> findAllByIsActiveFalse(Pageable pageable);
