@@ -64,4 +64,9 @@ public class OrdemProducaoController {
     public ResponseEntity<OrdemProducaoResponse> cancelar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.cancelar(id));
     }
+
+    @PatchMapping("/{id}/aprovar")
+    public ResponseEntity<OrdemProducaoResponse> aprovar(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.aprovar(id));
+    }
 }

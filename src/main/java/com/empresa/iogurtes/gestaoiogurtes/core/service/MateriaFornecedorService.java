@@ -58,7 +58,7 @@ public class MateriaFornecedorService
         Moeda moeda = moedaRepository.findByIdAndIsActiveTrue(info.moedaId())
                 .orElseThrow(()->new MoedaException(MoedaErrorCode.MOEDA_NOT_FOUND));
 
-        if (materiaFornecedorRepository.existsByMateria_IdAndFornecedor_Id(materiaId, info.fornecedorId()))
+        if (materiaFornecedorRepository.existsByMateria_IdAndFornecedor_IdAndIsActiveIsTrue(materiaId, info.fornecedorId()))
             throw new MateriaFornecedorException(MateriaFornecedorErrorCode.ASSOCIACAO_ALREADY_EXISTS);
 
         BigDecimal precoUnitarioEur = calcularPrecoEur(info.precoUnitario(), moeda.getTaxaConversaoEur());
