@@ -82,4 +82,9 @@ public class EncomendaController {
     public ResponseEntity<EncomendaResponse> cancelar(@PathVariable UUID id) {
         return ResponseEntity.ok(service.cancelar(id));
     }
+
+    @PatchMapping("/{id}/confirmar")
+    public ResponseEntity<EncomendaResponse> confirmar(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.confirmar(id));
+    }
 }
