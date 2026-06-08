@@ -77,6 +77,7 @@ public class EncomendaService {
         BigDecimal totalEurSemIva = BigDecimal.ZERO;
         BigDecimal totalEurComIva = BigDecimal.ZERO;
 
+        // ── Passo 1: calcular totais ──────────────────────────────────────────────
         for (CreateEncomendaPalletRequest palletInfo : info.pallets()) {
             ProdutoFinal produto = produtoFinalRepository.findByIdAndIsActiveIsTrue(palletInfo.produtoId())
                     .orElseThrow(() -> new ProdutoFinalException(ProdutoFinalErrorCode.PRODUTO_FINAL_NOT_FOUND));
@@ -90,21 +91,19 @@ public class EncomendaService {
             BigDecimal precoPorPalletEur = produto.getPrecoPorKg().multiply(palletTipo.getCapacidadeKg())
                     .setScale(2, RoundingMode.HALF_UP);
             BigDecimal subtotalEur = precoPorPalletEur.multiply(BigDecimal.valueOf(palletInfo.quantidadePallets()));
-            // IVA a dividir por 100%
             BigDecimal ivaFactor = produto.getTaxaIva().divide(BigDecimal.valueOf(100)).add(BigDecimal.ONE);
 
             totalEurSemIva = totalEurSemIva.add(subtotalEur);
             totalEurComIva = totalEurComIva.add(subtotalEur.multiply(ivaFactor));
         }
 
-        // total_preco = totalEurComIva convertido para a moeda do cliente
         BigDecimal totalPreco = totalEurComIva.divide(taxaSnapshot, 2, RoundingMode.HALF_UP);
 
-        // ── Passo 2: criar encomenda ──────────────────────────────────────────
+        // ── Passo 2: criar encomenda ──────────────────────────────────────────────
         Encomenda encomenda = new Encomenda(user, moeda, taxaSnapshot, totalPreco, totalEurComIva);
         Encomenda savedEncomenda = encomendaRepository.save(encomenda);
 
-        // ── Passo 3: criar pallets e verificar stock por FEFO ─────────────────
+        // ── Passo 3: criar pallets e verificar stock por FEFO ─────────────────────
         for (CreateEncomendaPalletRequest palletInfo : info.pallets()) {
             ProdutoFinal produto = produtoFinalRepository.findByIdAndIsActiveIsTrue(palletInfo.produtoId())
                     .orElseThrow(() -> new ProdutoFinalException(ProdutoFinalErrorCode.PRODUTO_FINAL_NOT_FOUND));
@@ -120,11 +119,9 @@ public class EncomendaService {
             );
             EncomendaPallet savedEp = encomendaPalletRepository.save(ep);
 
-            // Quantidade total necessária em kg
             BigDecimal kgNecessarios = palletTipo.getCapacidadeKg()
                     .multiply(BigDecimal.valueOf(palletInfo.quantidadePallets()));
 
-            // Verificar stock disponível nos lotes (FEFO — apenas DISPONIVEL)
             List<LoteProducao> lotes = loteRepository
                     .findAllByProduto_IdAndEstadoOrderByDataValidadeAsc(produto.getId(), EstadoLote.DISPONIVEL);
 
@@ -133,31 +130,38 @@ public class EncomendaService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             if (stockDisponivel.compareTo(kgNecessarios) >= 0) {
-                // ── Stock suficiente: expedir por FEFO ────────────────────────
+                // ── Stock suficiente: expedir por FEFO ────────────────────────────
                 expedirPorFefo(lotes, kgNecessarios, savedEncomenda.getUser(), savedEp);
             } else {
-                // ── Stock insuficiente: gerar ordem produção ──────────────────
-                // Esgota o que há e produz a pallet inteira em falta
+                // ── Stock insuficiente: esgota o parcial e cria ordem ────────────
                 if (stockDisponivel.compareTo(BigDecimal.ZERO) > 0)
                     expedirPorFefo(lotes, stockDisponivel, savedEncomenda.getUser(), savedEp);
 
-                // Cria ordem de produção em AGUARDA_APROVACAO para a pallet inteira
                 OrdemProducao ordem = new OrdemProducao(user,
                         "Ordem automática — Encomenda #" + savedEncomenda.getId());
                 ordem.setEstado(EstadoOrdem.AGUARDA_APROVACAO);
                 OrdemProducao savedOrdem = ordemProducaoRepository.save(ordem);
 
-                // Regista o produto na ordem
                 ordemProducaoProdutoRepository.save(
                         new OrdemProducaoProduto(savedOrdem, produto,
                                 palletTipo.getCapacidadeKg().multiply(BigDecimal.valueOf(palletInfo.quantidadePallets())))
                 );
 
-                // Liga a ordem à encomenda_pallet
                 encomendaOrdemRepository.save(
                         new EncomendaOrdem(savedOrdem, savedEp, palletInfo.quantidadePallets())
                 );
             }
+        }
+
+        // ── Passo 4: se não ficou nenhuma ordem pendente, expede automaticamente ──
+        boolean temOrdemPendente = encomendaOrdemRepository
+                .findAllByEncomendaPallet_Encomenda_IdAndIsActiveTrue(savedEncomenda.getId())
+                .stream()
+                .anyMatch(eo -> eo.getOrdem().getEstado() != EstadoOrdem.CONCLUIDA);
+
+        if (!temOrdemPendente) {
+            savedEncomenda.setEstado(EstadoEncomenda.EXPEDIDA);
+            savedEncomenda = encomendaRepository.save(savedEncomenda);
         }
 
         return toResponse(savedEncomenda);
