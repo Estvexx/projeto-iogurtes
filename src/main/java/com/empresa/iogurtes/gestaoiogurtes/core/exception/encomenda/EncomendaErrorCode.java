@@ -12,7 +12,9 @@ public enum EncomendaErrorCode {
     PALLET_TIPO_NOT_FOUND("ENC_008", "Tipo de pallet não encontrado"),
     PRODUTO_SEM_PRECO_KG("ENC_009", "Produto não tem preço por kg definido"),
     ENCOMENDA_ORDEM_NOT_FOUND("ENC_010", "Encomenda ordem não encontrada"),
-    ENCOMENDA_ORDEM_JA_PROCESSADA("ENC_011", "Encomenda ordem já foi aceite ou recusada");
+    ENCOMENDA_TRANSICAO_INVALIDA("ENC_011", "Transição de estado inválida para esta encomenda"),
+    ENCOMENDA_ORDENS_NAO_CONCLUIDAS("ENC_012", "Existem ordens de produção associadas não concluídas"),
+    ENCOMENDA_ORDEM_JA_PROCESSADA("ENC_013", "Encomenda ordem já foi aceite ou recusada");
 
     private final String code;
     private final String message;

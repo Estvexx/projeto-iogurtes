@@ -285,6 +285,28 @@ public class EncomendaService {
         }
     }
 
+    @Transactional
+    public EncomendaResponse confirmar(UUID id) {
+        Encomenda encomenda = encomendaRepository.findByIdAndIsActiveTrue(id)
+                .orElseThrow(() -> new EncomendaException(EncomendaErrorCode.ENCOMENDA_NOT_FOUND));
+
+        if (encomenda.getEstado() != EstadoEncomenda.PENDENTE)
+            throw new EncomendaException(EncomendaErrorCode.ENCOMENDA_TRANSICAO_INVALIDA);
+
+        // Verifica se tem ordens de produção associadas ainda não concluídas
+        List<EncomendaOrdem> encomendaOrdens = encomendaOrdemRepository
+                .findAllByEncomendaPallet_Encomenda_IdAndIsActiveTrue(id);
+
+        boolean temOrdemPendente = encomendaOrdens.stream()
+                .anyMatch(eo -> eo.getOrdem().getEstado() != EstadoOrdem.CONCLUIDA);
+
+        if (temOrdemPendente)
+            throw new EncomendaException(EncomendaErrorCode.ENCOMENDA_ORDENS_NAO_CONCLUIDAS);
+
+        encomenda.setEstado(EstadoEncomenda.EXPEDIDA);
+        return toResponse(encomendaRepository.save(encomenda));
+    }
+
     private EncomendaResponse toResponse(Encomenda e) {
         List<EncomendaPallet> pallets = encomendaPalletRepository.findAllByEncomenda_IdAndIsActiveTrue(e.getId());
         return new EncomendaResponse(
