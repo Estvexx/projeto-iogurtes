@@ -54,12 +54,13 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/error")
                         .permitAll()
-
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/users/**").hasRole("ADMIN")
-                        .requestMatchers("/fornecedores/**").hasAnyRole("ADMIN", "GESTOR")
-                        .requestMatchers("/materias-primas/**").hasAnyRole("ADMIN", "GESTOR")
-                        .requestMatchers("/ordens-producao/**").hasAnyRole("ADMIN", "OPERADOR")
+                        /*
+                         * .requestMatchers("/admin/**").hasRole("ADMIN")
+                         * .requestMatchers("/users/**").hasRole("ADMIN")
+                         * .requestMatchers("/fornecedores/**").hasAnyRole("ADMIN", "GESTOR")
+                         * .requestMatchers("/materias-primas/**").hasAnyRole("ADMIN", "GESTOR")
+                         * .requestMatchers("/ordens-producao/**").hasAnyRole("ADMIN", "OPERADOR")
+                         */
                         .requestMatchers("/encomendas/**").hasAnyRole("ADMIN", "GESTOR")
 
                         .anyRequest().authenticated())
