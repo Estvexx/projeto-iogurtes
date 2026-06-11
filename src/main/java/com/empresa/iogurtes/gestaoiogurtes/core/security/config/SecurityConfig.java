@@ -35,9 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/login",
@@ -45,8 +43,17 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/webjars/**"
-                        ).permitAll()
+                                "/webjars/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/error")
+                        .permitAll()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/users/**").hasRole("ADMIN")
@@ -55,13 +62,9 @@ public class SecurityConfig {
                         .requestMatchers("/ordens-producao/**").hasAnyRole("ADMIN", "OPERADOR")
                         .requestMatchers("/encomendas/**").hasAnyRole("ADMIN", "GESTOR")
 
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwt ->
-                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
-                )
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(
+                        oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
                 .build();
     }
 
@@ -85,8 +88,7 @@ public class SecurityConfig {
     private SecretKey buildSecretKey() {
         return new SecretKeySpec(
                 jwtSecret.getBytes(StandardCharsets.UTF_8),
-                "HmacSHA256"
-        );
+                "HmacSHA256");
     }
 
     @Bean
@@ -102,9 +104,7 @@ public class SecurityConfig {
 
             return List.of(
                     new org.springframework.security.core.authority.SimpleGrantedAuthority(
-                            "ROLE_" + role
-                    )
-            );
+                            "ROLE_" + role));
         });
 
         return converter;
@@ -112,8 +112,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration
-    ) throws Exception {
+            AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
