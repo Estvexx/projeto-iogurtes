@@ -211,6 +211,54 @@ public class OrdemProducaoService {
         if (ordem.getEstado() != EstadoOrdem.AGUARDA_APROVACAO)
             throw new OrdemProducaoException(OrdemProducaoErrorCode.TRANSICAO_ESTADO_INVALIDA);
 
+        List<OrdemProducaoProduto> produtos = ordemProdutoRepository.findAllByOrdem_IdAndIsActiveTrue(id);
+
+        // ── Calcular consumos totais necessários ──────────────────────────────────
+        Map<UUID, BigDecimal> consumosTotais = new HashMap<>();
+
+        for (OrdemProducaoProduto opp : produtos) {
+            List<ProdutoMateria> composicao = produtoMateriaRepository
+                    .findAllByProduto_IdAndIsActiveTrue(opp.getProduto().getId());
+
+            if (composicao.isEmpty())
+                throw new OrdemProducaoException(
+                        OrdemProducaoErrorCode.PRODUTO_SEM_COMPOSICAO,
+                        opp.getProduto().getNome()
+                );
+
+            for (ProdutoMateria pm : composicao) {
+                BigDecimal consumo = pm.getQuantidadePorUnidadeProduto().multiply(opp.getQuantidadeKg());
+                consumosTotais.merge(pm.getMateria().getId(), consumo, BigDecimal::add);
+            }
+        }
+
+        // ── Validar stock suficiente ──────────────────────────────────────────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+
+            if (materia.getStockAtual().compareTo(entry.getValue()) < 0)
+                throw new OrdemProducaoException(
+                        OrdemProducaoErrorCode.STOCK_INSUFICIENTE,
+                        materia.getNome() + " (disponível: " + materia.getStockAtual() + ", necessário: " + entry.getValue() + ")"
+                );
+        }
+
+        // ── Descontar stock das matérias primas ───────────────────────────────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+            materia.setStockAtual(materia.getStockAtual().subtract(entry.getValue()));
+            materiaPrimaRepository.save(materia);
+        }
+
+        // ── Criar registos de consumo ─────────────────────────────────────────────
+        for (Map.Entry<UUID, BigDecimal> entry : consumosTotais.entrySet()) {
+            MateriaPrima materia = materiaPrimaRepository.findByIdAndIsActiveIsTrue(entry.getKey())
+                    .orElseThrow(() -> new MateriaPrimaException(MateriaPrimaErrorCode.MATERIA_PRIMA_NOT_FOUND));
+            consumoRepository.save(new ConsumoProducao(ordem, materia, entry.getValue()));
+        }
+
         ordem.setEstado(EstadoOrdem.EM_PRODUCAO);
         ordem.setAprovadoEm(LocalDateTime.now());
 
